@@ -16,15 +16,6 @@ minetest.register_node("paragenv7:drygrass", {
 	}),
 })
 
-minetest.register_node("paragenv7:safesand", {
-	description = "Sand",
-	tiles = {"default_sand.png"},
-	is_ground_content = true,
-	groups = {crumbly=3, sand=1},
-	drop = "default:sand",
-	sounds = default.node_sound_sand_defaults(),
-})
-
 minetest.register_node("paragenv7:pleaf", {
 	description = "PG Pine Needles",
 	visual_scale = 1.3,
@@ -81,6 +72,34 @@ minetest.register_node("paragenv7:ssapling", {
 	walkable = false,
 	groups = {snappy=2,dig_immediate=3,flammable=2},
 	sounds = default.node_sound_defaults(),
+})
+
+minetest.register_node(":default:snow", {
+	description = "Snow",
+	tiles = {"default_snow.png"},
+	inventory_image = "default_snowball.png",
+	wield_image = "default_snowball.png",
+	is_ground_content = true,
+	paramtype = "light",
+	sunlight_propagates = true, -- redefine snow because of this dark nodebox bug
+	buildable_to = true,
+	drawtype = "nodebox",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5, -0.5, -0.5,  0.5, -0.5+2/16, 0.5},
+		},
+	},
+	groups = {crumbly=3,falling_node=1},
+	sounds = default.node_sound_dirt_defaults({
+		footstep = {name="default_grass_footstep", gain=0.4},
+	}),
+	on_construct = function(pos)
+		pos.y = pos.y - 1
+		if minetest.get_node(pos).name == "default:dirt_with_grass" then
+			minetest.set_node(pos, {name="default:dirt_with_snow"})
+		end
+	end,
 })
 
 -- ABMs
