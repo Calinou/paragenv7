@@ -16,6 +16,15 @@ minetest.register_node("paragenv7:drygrass", {
 	}),
 })
 
+minetest.register_node("paragenv7:safesand", {
+	description = "Sand",
+	tiles = {"default_sand.png"},
+	is_ground_content = true,
+	groups = {crumbly=3, sand=1},
+	drop = "default:sand",
+	sounds = default.node_sound_sand_defaults(),
+})
+
 minetest.register_node("paragenv7:pleaf", {
 	description = "PG Pine Needles",
 	visual_scale = 1.3,
@@ -72,4 +81,48 @@ minetest.register_node("paragenv7:ssapling", {
 	walkable = false,
 	groups = {snappy=2,dig_immediate=3,flammable=2},
 	sounds = default.node_sound_defaults(),
+})
+
+-- ABMs
+
+-- Pine sapling abm
+
+minetest.register_abm({
+    nodenames = {"paragenv7:psapling"},
+    interval = PININT,
+    chance = PINCHA,
+    action = function(pos, node, active_object_count, active_object_count_wider)
+		paragenv7_pine(pos)
+		if DEBUG then
+			print ("[paragenv7] Pine sapling grows")
+		end
+    end
+})
+
+-- Jungletree sapling abm
+
+minetest.register_abm({
+    nodenames = {"paragenv7:jsapling"},
+    interval = JUNINT,
+    chance = JUNCHA,
+    action = function(pos, node, active_object_count, active_object_count_wider)
+		paragenv7_jtree(pos)
+		if DEBUG then
+			print ("[paragenv7] Jungletree sapling grows")
+		end
+    end,
+})
+
+-- Savanna tree sapling abm
+
+minetest.register_abm({
+    nodenames = {"paragenv7:ssapling"},
+    interval = SAVINT,
+    chance = SAVCHA,
+    action = function(pos, node, active_object_count, active_object_count_wider)
+		paragenv7_stree(pos)
+		if DEBUG then
+			print ("[paragenv7] Savanna tree sapling grows")
+		end
+    end,
 })

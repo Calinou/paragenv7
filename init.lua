@@ -5,7 +5,8 @@
 
 -- Variables
 
-local ONGEN = true
+local ONGEN = true -- (true/false) Enable biome generation.
+local PROG = true -- Print generation progress to terminal.
 
 local SANDY = 3 -- Sandline average y of beach top.
 local SANDA = 5 --  -- Sandline amplitude.
@@ -34,6 +35,15 @@ local SAVTRECHA = 361 --  -- Savanna tree 1/x chance per node in savanna.
 local RAIJUNCHA = 16 --  -- Jungletree 1/x chance per node in rainforest.
 local DUNGRACHA = 9 --  -- Dry shrub 1/x chance per node in dunes.
 local PAPCHA = 2 -- 2 -- Papyrus 1/x chance per node next to water.
+
+local PININT = 67 -- 67 -- Pine from sapling abm interval in seconds.
+local PINCHA = 11 -- 11 -- 1/x chance per node.
+
+local JUNINT = 71 -- 71 -- Jungletree from sapling abm interval in seconds.
+local JUNCHA = 11 -- 11 -- 1/x chance per node.
+
+local SAVINT = 73 -- 73 -- Jungletree from sapling abm interval in seconds.
+local SAVCHA = 11 -- 11 -- 1/x chance per node.
 
 -- 3D Perlin5 fine material depth, sandline
 local perl5 = {
@@ -139,7 +149,7 @@ end
 
 if ONGEN then
 	minetest.register_on_generated(function(minp, maxp, seed)
-		if minp.y >= -100 and minp.y <= 500 then
+		if minp.y >= -32 and minp.y <= 608 then
 			local perlin5 = minetest.get_perlin(perl5.SEED5, perl5.OCTA5, perl5.PERS5, perl5.SCAL5)
 			local perlin6 = minetest.get_perlin(perl6.SEED6, perl6.OCTA6, perl6.PERS6, perl6.SCAL6)
 			local perlin7 = minetest.get_perlin(perl7.SEED7, perl7.OCTA7, perl7.PERS7, perl7.SCAL7)
@@ -150,9 +160,11 @@ if ONGEN then
 			local y0 = minp.y
 			local z0 = minp.z
 			for x = x0, x1 do -- for each plane do
-				print ("[paragen] "..(x - x0 + 1).." ("..minp.x.." "..minp.y.." "..minp.z..")")
+				if PROG then
+					print ("[paragenv7] "..(x - x0 + 1).." ("..minp.x.." "..minp.y.." "..minp.z..")")
+				end
 				for z = z0, z1 do -- for each column do
-					local stony = 1000 -- stone y found
+					local stony = 1000 -- stone top surface y
 					local sol = true -- solid node above
 					local des = false -- desert biome
 					local sav = false -- savanna biome
@@ -168,9 +180,9 @@ if ONGEN then
 						local noise5b = perlin5:get2d({x=x+777,y=z+777}) -- fine material depth
 						local fimadep = math.floor(FMAV + noise5b * FMAMP - y / FMGRAD)
 						local nodename = minetest.get_node({x=x,y=y,z=z}).name 
-						if nodename == "default:stone" or nodename == "default:stone_with_coal" 
-						or nodename == "default:stone_with_iron" then
-							if not sol then -- if stone under non-solid node
+						if nodename == "default:stone" or nodename == "default:stone_with_coal"
+						or nodename == "default:stone_with_iron" then -- if node solid then
+							if not sol then -- if solid node under non-solid node then
 								stony = y -- most recent surface y recorded
 								local noise6 = perlin6:get2d({x=x,y=z}) -- decide / reset biome
 								local noise7 = perlin7:get2d({x=x,y=z})
@@ -205,7 +217,7 @@ if ONGEN then
 										if y > 4 and math.random(DUNGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
 										elseif y == 1 and (sav or rai or wet) and math.random(PAPCHA) == 2 then -- papyrus
-											minetest.add_node({x=x,y=y,z=z},{name="default:water_source"})
+											minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
 											for p = 1, math.random(2,5) do
 												minetest.add_node({x=x,y=y+p,z=z},{name="default:papyrus"})
 											end
@@ -217,10 +229,10 @@ if ONGEN then
 									end
 								elseif des then -- if desert
 									minetest.add_node({x=x,y=y,z=z},{name="default:desert_sand"})
-									if not sol then
-										if y > 16 and math.random(DESGRACHA) == 2 then
+									if not sol and y > 8 then
+										if math.random(DESGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif y > 16 and math.random(DESCACCHA) == 2 then
+										elseif math.random(DESCACCHA) == 2 then
 											for c = 1, math.random(1,6) do
 												minetest.add_node({x=x,y=y+c,z=z},{name="default:cactus"})
 											end
@@ -268,11 +280,17 @@ if ONGEN then
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt"})
 									end
 								end
-							elseif y == 1 and (tun or tai) then
-								minetest.add_node({x=x,y=y,z=z},{name="default:ice"})
 							end
+							sol = true -- node above was solid
 						else
-							sol = false
+							if nodename == "default:water_source" and y == 1 then
+								local noise6 = perlin6:get2d({x=x,y=z}) -- find temp
+								local temp = noise6 - y / TGRAD
+								if temp < LOTET + math.random() / 10 then
+									minetest.add_node({x=x,y=y,z=z},{name="default:ice"})
+								end
+							end
+							sol = false -- node above was not solid
 						end
 					end
 				end	
