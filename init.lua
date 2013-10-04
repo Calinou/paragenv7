@@ -1,5 +1,5 @@
 -- paragenv7 0.1.0 by paramat
--- For Minetest 0.4.7 stable
+-- For latest stable Minetest and back to 0.4.7
 -- Depends default
 -- Licenses: Code WTFPL. Textures: CC BY-SA
 
@@ -8,32 +8,32 @@
 local ONGEN = true -- (true/false) Enable biome generation.
 local PROG = true -- Print generation progress to terminal.
 
-local SANDY = 2 -- Sandline average y of beach top.
-local SANDA = 4 --  -- Sandline amplitude.
-local SANDR = 2 --  -- Sandline randomness.
-local FMAV = 2 --  -- Surface material average depth at sea level.
-local FMAMP = 2 --  -- Surface material depth amplitude.
+local SANDY = 2 -- 2 -- Sandline average y of beach top.
+local SANDA = 4 -- 3 -- Sandline amplitude.
+local SANDR = 2 -- 2 -- Sandline randomness.
+local FMAV = 3 -- 3 -- Surface material average depth at sea level.
+local FMAMP = 2 -- 2 -- Surface material depth amplitude.
 
-local HITET = 0.35 --  -- Desert / savanna / rainforest temperature noise threshold.
-local LOTET = -0.45 --  -- Tundra / taiga temperature noise threshold.
-local HIWET = 0.35 --  -- Wet grassland / rainforest wetness noise threshold.
-local LOWET = -0.45 --  -- Tundra / dry grassland / desert wetness noise threshold.
+local HITET = 0.25 -- 0.25 -- Desert / savanna / rainforest temperature noise threshold.
+local LOTET = -0.55 -- -0.55 -- Tundra / taiga temperature noise threshold.
+local HIWET = 0.35 -- 0.35 -- Wet grassland / rainforest wetness noise threshold.
+local LOWET = -0.45 -- -0.45 -- Tundra / dry grassland / desert wetness noise threshold.
 
 local TGRAD = 160 -- 160 -- Vertical temperature gradient. -- All 3 fall with altitude from y = 0
 local HGRAD = 160 -- 160 -- Vertical humidity gradient.
-local FMGRAD = 160 -- 160 -- Surface material thinning gradient.
+local FMGRAD = 40 -- 40 -- Surface material thinning gradient.
 
-local TUNGRACHA = 121 --  -- Dry shrub 1/x chance per node in tundra.
-local TAIPINCHA = 49 --  -- Pine 1/x chance per node in taiga.
+local TUNGRACHA = 121 -- 121 -- Dry shrub 1/x chance per node in tundra.
+local TAIPINCHA = 49 -- 49 -- Pine 1/x chance per node in taiga.
 local DRYGRACHA = 2 -- 2 -- Dry shrub 1/x chance per node in dry grasslands.
-local DECAPPCHA = 64 --  -- Appletree sapling 1/x chance per node in deciduous forest.
+local DECAPPCHA = 64 -- 64 -- Appletree sapling 1/x chance per node in deciduous forest.
 local WETGRACHA = 2 -- 2 -- Junglegrass 1/x chance per node in wet grasslands.
-local DESCACCHA = 529 --  -- Cactus 1/x chance per node in desert.
-local DESGRACHA = 289 --  -- Dry shrub 1/x chance per node in desert.
+local DESCACCHA = 529 -- 529 -- Cactus 1/x chance per node in desert.
+local DESGRACHA = 289 -- 289 -- Dry shrub 1/x chance per node in desert.
 local SAVGRACHA = 3 -- 3 -- Dry shrub 1/x chance per node in savanna.
-local SAVTRECHA = 361 --  -- Savanna tree 1/x chance per node in savanna.
-local RAIJUNCHA = 16 --  -- Jungletree 1/x chance per node in rainforest.
-local DUNGRACHA = 9 --  -- Dry shrub 1/x chance per node in dunes.
+local SAVTRECHA = 361 -- 361 -- Savanna tree 1/x chance per node in savanna.
+local RAIJUNCHA = 16 -- 16 -- Jungletree 1/x chance per node in rainforest.
+local DUNGRACHA = 9 -- 9 -- Dry shrub 1/x chance per node in dunes.
 local PAPCHA = 2 -- 2 -- Papyrus 1/x chance per node next to water.
 
 local PININT = 67 -- 67 -- Pine from sapling abm interval in seconds.
@@ -105,7 +105,7 @@ end
 -- Savanna tree function
 
 local function paragenv7_stree(pos)
-	local t = 4 + math.random(2) -- trunk height
+	local t = 4 + math.random(3) -- trunk height
 	for j = -2, t do
 		if j == t then
 			for i = -3, 3 do
@@ -124,7 +124,7 @@ end
 
 -- Pine tree function
 
-local function paragenv7_pine(pos)
+local function paragenv7_ptree(pos)
 	local t = 10 + math.random(3) -- trunk height
 	for i = -2, 2 do
 	for k = -2, 2 do
@@ -150,11 +150,31 @@ local function paragenv7_pine(pos)
 	end
 end
 
+-- Apple tree function
+
+local function paragenv7_atree(pos)
+	local t = 4 + math.random(2) -- trunk height
+	for j = -2, t do
+		if j == t or j == t - 2 then
+			for i = -2, 2 do
+			for k = -2, 2 do
+				local absi = math.abs(i)
+				local absk = math.abs(k)
+				if math.random() > (absi + absk) / 24 then
+					minetest.add_node({x=pos.x+i,y=pos.y+j+math.random(0, 1),z=pos.z+k},{name="default:leaves"})
+				end
+			end
+			end
+		end
+		minetest.add_node({x=pos.x,y=pos.y+j,z=pos.z},{name="default:tree"})
+	end
+end
+
 -- On generated function
 
 if ONGEN then
 	minetest.register_on_generated(function(minp, maxp, seed)
-		if minp.y >= -112 and minp.y <= 128 then -- 4 chunks y = -112 to y = 207
+		if minp.y >= -32 and minp.y <= 208 then -- 4 chunks y = -112 to y = 207
 			local perlin5 = minetest.get_perlin(perl5.SEED5, perl5.OCTA5, perl5.PERS5, perl5.SCAL5)
 			local perlin6 = minetest.get_perlin(perl6.SEED6, perl6.OCTA6, perl6.PERS6, perl6.SCAL6)
 			local perlin7 = minetest.get_perlin(perl7.SEED7, perl7.OCTA7, perl7.PERS7, perl7.SCAL7)
@@ -255,11 +275,11 @@ if ONGEN then
 								elseif dry or sav then -- dry grassland or savanna
 									if not sol then -- if surface node then
 										minetest.add_node({x=x,y=y,z=z},{name="paragenv7:drygrass"})
-										if dry and y > 0 and math.random(DRYGRACHA) == 2 then
+										if dry and y > 1 and math.random(DRYGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and y > 0 and math.random(SAVGRACHA) == 2 then
+										elseif sav and y > 1 and math.random(SAVGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and math.random(SAVTRECHA) == 2 then
+										elseif sav and y > -2 and math.random(SAVTRECHA) == 2 then
 											paragenv7_stree({x=x,y=y+1,z=z})
 										end
 									else -- underground node
@@ -270,26 +290,32 @@ if ONGEN then
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
 										if wet and y > 0 and math.random(WETGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:junglegrass"})
-										elseif dec and y > sandy and math.random(DECAPPCHA) == 2 then
-											minetest.add_node({x=x,y=y+1,z=z},{name="default:sapling"})
-										elseif tai then
+										elseif dec and y > -2 and math.random(DECAPPCHA) == 2 then
+											paragenv7_atree({x=x,y=y+1,z=z})
+										elseif tai and y > 2 then
 											if math.random(TAIPINCHA) == 2 then
-												paragenv7_pine({x=x,y=y+1,z=z})
+												paragenv7_ptree({x=x,y=y+1,z=z})
 											elseif y > 0 then
 												minetest.add_node({x=x,y=y+1,z=z},{name="default:snowblock"})
 											end
-										elseif rai and math.random(RAIJUNCHA) == 2 then
+										elseif rai and y > -2 and math.random(RAIJUNCHA) == 2 then
 											paragenv7_jtree({x=x,y=y+1,z=z})
 										end
 									else
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt"})
 									end
 								end
-								if y == 1 and y >= sandy and (des or sav or rai or wet) and math.random(PAPCHA) == 2 then -- papyrus
+								if not sol and y == 1 and y >= sandy and (des or sav or rai or wet) and math.random(PAPCHA) == 2 then -- papyrus
 									minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
 									for p = 1, math.random(2,5) do
 										minetest.add_node({x=x,y=y+p,z=z},{name="default:papyrus"})
 									end
+								end
+							elseif not sol and y > 0 then
+								if tai then -- snow on rocky terrain
+									minetest.add_node({x=x,y=y+1,z=z},{name="default:snowblock"})
+								elseif tun then
+									minetest.add_node({x=x,y=y+1,z=z},{name="default:snow"})
 								end
 							end
 							sol = true -- node above was solid
