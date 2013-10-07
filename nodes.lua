@@ -16,12 +16,27 @@ minetest.register_node("paragenv7:drygrass", {
 	}),
 })
 
+minetest.register_node("paragenv7:fog", {
+	description = "PGV7 Fog",
+	drawtype = "glasslike",
+	tiles = {"paragenv7_fog.png"},
+	alpha = 127,
+	paramtype = "light",
+	sunlight_propagates = true,
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	post_effect_color = {a=127, r=255, g=255, b=255},
+})
+
 minetest.register_node("paragenv7:pleaf", {
 	description = "PG Pine Needles",
+	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"paragenv7_pleaf.png"},
 	paramtype = "light",
-	groups = {snappy=3, flammable=2},
+	groups = {snappy=3, leafdecay=3, flammable=2, leaves=1},
 	drop = {
 		max_items = 1,
 		items = {
@@ -47,10 +62,11 @@ minetest.register_node("paragenv7:psapling", {
 
 minetest.register_node("paragenv7:sleaf", {
 	description = "PG Savanna Tree Leaves",
+	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"paragenv7_sleaf.png"},
 	paramtype = "light",
-	groups = {snappy=3, flammable=2},
+	groups = {snappy=3, leafdecay=4, flammable=2, leaves=1},
 	drop = {
 		max_items = 1,
 		items = {
@@ -84,9 +100,7 @@ minetest.register_abm({
     chance = PINCHA,
     action = function(pos, node, active_object_count, active_object_count_wider)
 		paragenv7_pine(pos)
-		if DEBUG then
-			print ("[paragenv7] Pine sapling grows")
-		end
+		print ("[paragenv7] Pine sapling grows")
     end
 })
 
@@ -98,9 +112,7 @@ minetest.register_abm({
     chance = JUNCHA,
     action = function(pos, node, active_object_count, active_object_count_wider)
 		paragenv7_jtree(pos)
-		if DEBUG then
-			print ("[paragenv7] Jungletree sapling grows")
-		end
+		print ("[paragenv7] Jungletree sapling grows")
     end,
 })
 
@@ -112,8 +124,6 @@ minetest.register_abm({
     chance = SAVCHA,
     action = function(pos, node, active_object_count, active_object_count_wider)
 		paragenv7_stree(pos)
-		if DEBUG then
-			print ("[paragenv7] Savanna tree sapling grows")
-		end
+		print ("[paragenv7] Savanna tree sapling grows")
     end,
 })
