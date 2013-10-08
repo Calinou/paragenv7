@@ -16,15 +16,19 @@ local FMAMP = 2 -- 2 -- Surface material depth amplitude.
 
 local HITET = 0.25 -- 0.25 -- Desert / savanna / rainforest temperature noise threshold.
 local LOTET = -0.55 -- -0.55 -- Tundra / taiga temperature noise threshold.
-local HIWET = 0.35 -- 0.35 -- Wet grassland / rainforest wetness noise threshold.
-local LOWET = -0.45 -- -0.45 -- Tundra / dry grassland / desert wetness noise threshold.
+local HIWET = 0.25 -- 0.35 -- Wet grassland / rainforest wetness noise threshold.
+local LOWET = -0.55 -- -0.45 -- Tundra / dry grassland / desert wetness noise threshold.
+
+local FOG = true -- Enable fog.
+local FOGTOP = 12 -- Fog stops at this y.
+local FOGHUT = 0.8 -- Fog humidity threshold.
 
 local TGRAD = 160 -- 160 -- Vertical temperature gradient. -- All 3 fall with altitude from y = 0
 local HGRAD = 160 -- 160 -- Vertical humidity gradient.
 local FMGRAD = 40 -- 40 -- Surface material thinning gradient.
 
 local TUNGRACHA = 121 -- 121 -- Dry shrub 1/x chance per node in tundra.
-local TAIPINCHA = 49 -- 49 -- Pine 1/x chance per node in taiga.
+local TAIPINCHA = 64 -- 64 -- Pine 1/x chance per node in taiga.
 local DRYGRACHA = 2 -- 2 -- Dry shrub 1/x chance per node in dry grasslands.
 local DECAPPCHA = 64 -- 64 -- Appletree sapling 1/x chance per node in deciduous forest.
 local WETGRACHA = 2 -- 2 -- Junglegrass 1/x chance per node in wet grasslands.
@@ -34,7 +38,7 @@ local SAVGRACHA = 3 -- 3 -- Dry shrub 1/x chance per node in savanna.
 local SAVTRECHA = 361 -- 361 -- Savanna tree 1/x chance per node in savanna.
 local RAIJUNCHA = 16 -- 16 -- Jungletree 1/x chance per node in rainforest.
 local DUNGRACHA = 9 -- 9 -- Dry shrub 1/x chance per node in dunes.
-local PAPCHA = 2 -- 2 -- Papyrus 1/x chance per node next to water.
+local PAPCHA = 2 -- 2 -- Papyrus 1/x chance per node next to water in non-beach areas.
 
 local PININT = 67 -- 67 -- Pine from sapling abm interval in seconds.
 local PINCHA = 11 -- 11 -- 1/x chance per node.
@@ -78,7 +82,10 @@ dofile(minetest.get_modpath("paragenv7").."/nodes.lua")
 local sandy
 local fimadep2d
 local noise
+local noise6
 local noise7
+local temp
+local hum
 
 -- Functions
 
@@ -191,7 +198,9 @@ if ONGEN then
 				for z = z0, z1 do -- for each column do
 					local surfy = 1024 -- stone top surface y (1024 = not yet found)
 					local sol = true -- solid node above
-					local col = false -- solid nodes found in column
+					local col = false -- solid nodes in column
+					local notre = false -- when solid nodes in column set tre = false at end of block
+					local tre = true -- trees enabled for next surface
 					local des = false -- desert biome
 					local sav = false -- savanna biome
 					local rai = false -- rainforest biome
@@ -201,23 +210,28 @@ if ONGEN then
 					local tun = false -- tundra biome
 					local tai = false -- taiga forest biome
 					for y = y1, y0, -1 do -- working downwards through column for each node do
+						local watsur = false
 						local nodename = minetest.get_node({x=x,y=y,z=z}).name 
+						if nodename == "default:water_source" and y == 1 then
+							watsur = true
+						end
 						if nodename == "default:stone" or nodename == "default:stone_with_coal"
-						or nodename == "default:stone_with_iron" then -- if node solid then
+						or nodename == "default:stone_with_iron" or watsur then -- if terrain or water surface then
 							if not col then -- when surface first found calculate sandy, fimadep2d, temp2d, hum2d for column
 								local noise5c = perlin5:get2d({x=x-777,y=z-777}) -- beach top
-								sandy = SANDY + noise5c * SANDA + math.random(0,SANDR)
+								sandy = SANDY + math.floor(noise5c * SANDA) + math.random(0,SANDR)
 								local noise5b = perlin5:get2d({x=x,y=z}) -- fine material depth
 								fimadep2d = FMAV + noise5b * FMAMP
 								noise6 = perlin6:get2d({x=x,y=z})
 								noise7 = perlin7:get2d({x=x,y=z})
 								col = true
+								notre = true -- flag to set tree = false at end of block
 							end
-							local fimadep = fimadep2d - y / FMGRAD
+							local fimadep = math.floor(fimadep2d - y / FMGRAD)
 							if not sol then -- if solid node under non-solid node then
 								surfy = y -- most recent surface y recorded
-								local temp = noise6 - y / TGRAD -- decide / reset biome
-								local hum = noise7 - y / HGRAD
+								temp = noise6 - y / TGRAD -- decide / reset biome
+								hum = noise7 - y / HGRAD
 								if temp > HITET + math.random() / 10 then
 									if hum > HIWET + math.random() / 10 then
 										rai = true
@@ -240,8 +254,8 @@ if ONGEN then
 									dec = true
 								end
 							end
-							if surfy - y <= fimadep then -- if fine material then
-								if y <= sandy then -- if beach or dunes
+							if surfy - y <= fimadep and not watsur then -- if fine material not water then
+								if y <= sandy then -- if beach, lakebed or dunes
 									minetest.add_node({x=x,y=y,z=z},{name="default:sand"})
 									if not sol then
 										if y > 3 and math.random(DUNGRACHA) == 2 then
@@ -279,7 +293,7 @@ if ONGEN then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
 										elseif sav and y > 1 and math.random(SAVGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and y > -2 and math.random(SAVTRECHA) == 2 then
+										elseif sav and y > -2 and tre and math.random(SAVTRECHA) == 2 then
 											paragenv7_stree({x=x,y=y+1,z=z})
 										end
 									else -- underground node
@@ -290,43 +304,57 @@ if ONGEN then
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
 										if wet and y > 0 and math.random(WETGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:junglegrass"})
-										elseif dec and y > -2 and math.random(DECAPPCHA) == 2 then
+										elseif dec and y > -2 and tre and math.random(DECAPPCHA) == 2 then
 											paragenv7_atree({x=x,y=y+1,z=z})
-										elseif tai and y > 2 then
-											if math.random(TAIPINCHA) == 2 then
+										elseif tai then
+											if tre and y > 2 and math.random(TAIPINCHA) == 2 then
 												paragenv7_ptree({x=x,y=y+1,z=z})
 											elseif y > 0 then
 												minetest.add_node({x=x,y=y+1,z=z},{name="default:snowblock"})
 											end
-										elseif rai and y > -2 and math.random(RAIJUNCHA) == 2 then
+										elseif rai and y > -2 and tre and math.random(RAIJUNCHA) == 2 then
 											paragenv7_jtree({x=x,y=y+1,z=z})
 										end
 									else
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt"})
 									end
 								end
-								if not sol and y == 1 and y >= sandy and (des or sav or rai or wet) and math.random(PAPCHA) == 2 then -- papyrus
+								if not sol and y == 1 and y >= sandy and (des or sav or rai or wet)
+								and tre and math.random(PAPCHA) == 2 then -- papyrus
 									minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
-									for p = 1, math.random(2,5) do
-										minetest.add_node({x=x,y=y+p,z=z},{name="default:papyrus"})
+									for j = 1, math.random(2,5) do
+										if minetest.get_node({x=x,y=y+j,z=z}).name == "air" then
+											minetest.add_node({x=x,y=y+j,z=z},{name="default:papyrus"})
+										end
 									end
 								end
-							elseif not sol and y > 0 then
-								if tai then -- snow on rocky terrain
+							elseif watsur then -- if water surface then
+								if temp < LOTET + math.random() / 10 then
+									minetest.add_node({x=x,y=y,z=z},{name="default:ice"})
+								end
+							elseif not sol and y > 0 then -- else if rocky surface above water
+								if tai then
 									minetest.add_node({x=x,y=y+1,z=z},{name="default:snowblock"})
 								elseif tun then
 									minetest.add_node({x=x,y=y+1,z=z},{name="default:snow"})
 								end
 							end
-							sol = true -- node above was solid
-						else
-							if nodename == "default:water_source" and y == 1 then
-								local noise6 = perlin6:get2d({x=x,y=z}) -- find temp
-								local temp = noise6 - y / TGRAD
-								if temp < LOTET + math.random() / 10 then
-									minetest.add_node({x=x,y=y,z=z},{name="default:ice"})
+							if not sol and FOG and hum > FOGHUT and y > 0 and y < 16 then
+								local fogdep = 1 + math.floor((hum - FOGHUT) * 7) -- fog on land and water
+								if y + fogdep > FOGTOP then
+									fogdep = FOGTOP - y
+								end
+								for j = 1, fogdep do
+									if minetest.get_node({x=x,y=y+j,z=z}).name == "air" then
+										minetest.add_node({x=x,y=y+j,z=z},{name="paragenv7:fog"})
+									end
 								end
 							end
+							sol = true -- node above was solid
+							if notre then -- if solid nodes found in column then
+								tre = false -- disable trees below
+							end
+						else
 							sol = false -- node above was not solid
 						end
 					end
