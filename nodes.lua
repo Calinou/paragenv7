@@ -1,5 +1,5 @@
 minetest.register_node("paragenv7:permafrost", {
-	description = "PG Permafrost",
+	description = "PGV7 Permafrost",
 	tiles = {"paragenv7_permafrost.png"},
 	groups = {crumbly=1},
 	drop = "default:dirt",
@@ -7,7 +7,7 @@ minetest.register_node("paragenv7:permafrost", {
 })
 
 minetest.register_node("paragenv7:drygrass", {
-	description = "PG Dirt With Dry Grass",
+	description = "PGV7 Dirt With Dry Grass",
 	tiles = {"paragenv7_drygrass.png", "default_dirt.png", "paragenv7_drygrass.png"},
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
@@ -16,22 +16,8 @@ minetest.register_node("paragenv7:drygrass", {
 	}),
 })
 
-minetest.register_node("paragenv7:fog", {
-	description = "PGV7 Fog",
-	drawtype = "glasslike",
-	tiles = {"paragenv7_fog.png"},
-	alpha = 127,
-	paramtype = "light",
-	sunlight_propagates = true,
-	walkable = false,
-	pointable = false,
-	diggable = false,
-	buildable_to = true,
-	post_effect_color = {a=127, r=255, g=255, b=255},
-})
-
 minetest.register_node("paragenv7:pleaf", {
-	description = "PG Pine Needles",
+	description = "PGV7 Pine Needles",
 	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"paragenv7_pleaf.png"},
@@ -48,7 +34,7 @@ minetest.register_node("paragenv7:pleaf", {
 })
 
 minetest.register_node("paragenv7:psapling", {
-	description = "PG Pine Sapling",
+	description = "PGV7 Pine Sapling",
 	drawtype = "plantlike",
 	visual_scale = 1.0,
 	tiles = {"paragenv7_psapling.png"},
@@ -61,7 +47,7 @@ minetest.register_node("paragenv7:psapling", {
 })
 
 minetest.register_node("paragenv7:sleaf", {
-	description = "PG Savanna Tree Leaves",
+	description = "PGV7 Savanna Tree Leaves",
 	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"paragenv7_sleaf.png"},
@@ -78,7 +64,7 @@ minetest.register_node("paragenv7:sleaf", {
 })
 
 minetest.register_node("paragenv7:ssapling", {
-	description = "PG Savanna Tree Sapling",
+	description = "PGV7 Savanna Tree Sapling",
 	drawtype = "plantlike",
 	visual_scale = 1.0,
 	tiles = {"paragenv7_ssapling.png"},
@@ -90,40 +76,32 @@ minetest.register_node("paragenv7:ssapling", {
 	sounds = default.node_sound_defaults(),
 })
 
--- ABMs
-
--- Pine sapling abm
-
-minetest.register_abm({
-    nodenames = {"paragenv7:psapling"},
-    interval = PININT,
-    chance = PINCHA,
-    action = function(pos, node, active_object_count, active_object_count_wider)
-		paragenv7_pine(pos)
-		print ("[paragenv7] Pine sapling grows")
-    end
+minetest.register_node("paragenv7:jleaf", {
+	description = "PGV7 Jungletree Leaves",
+	drawtype = "allfaces_optional",
+	visual_scale = 1.3,
+	tiles = {"default_jungleleaves.png"},
+	paramtype = "light",
+	groups = {snappy=3, leafdecay=4, flammable=2, leaves=1},
+	drop = {
+		max_items = 1,
+		items = {
+			{items = {"paragenv7:jsapling"}, rarity = 20},
+			{items = {"paragenv7:jleaf"}}
+		}
+	},
+	sounds = default.node_sound_leaves_defaults(),
 })
 
--- Jungletree sapling abm
-
-minetest.register_abm({
-    nodenames = {"paragenv7:jsapling"},
-    interval = JUNINT,
-    chance = JUNCHA,
-    action = function(pos, node, active_object_count, active_object_count_wider)
-		paragenv7_jtree(pos)
-		print ("[paragenv7] Jungletree sapling grows")
-    end,
-})
-
--- Savanna tree sapling abm
-
-minetest.register_abm({
-    nodenames = {"paragenv7:ssapling"},
-    interval = SAVINT,
-    chance = SAVCHA,
-    action = function(pos, node, active_object_count, active_object_count_wider)
-		paragenv7_stree(pos)
-		print ("[paragenv7] Savanna tree sapling grows")
-    end,
+minetest.register_node("paragenv7:jsapling", {
+	description = "PGV7 Jungletree Sapling",
+	drawtype = "plantlike",
+	visual_scale = 1.0,
+	tiles = {"default_junglesapling.png"},
+	inventory_image = "default_junglesapling.png",
+	wield_image = "default_junglesapling.png",
+	paramtype = "light",
+	walkable = false,
+	groups = {snappy=2,dig_immediate=3,flammable=2},
+	sounds = default.node_sound_defaults(),
 })
