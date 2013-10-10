@@ -2,6 +2,8 @@
 -- For latest stable Minetest and back to 0.4.7
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
+-- TODO Add default:grass for wheat seeds
+-- Make thin stone ledges stay as stone no unsupported sand / dirt
 
 -- Variables
 
@@ -9,15 +11,15 @@ local ONGEN = true -- (true/false) Enable biome generation.
 local PROG = true -- Print generation progress to terminal.
 
 local SANDY = 2 -- 2 -- Sandline average y of beach top.
-local SANDA = 4 -- 3 -- Sandline amplitude.
+local SANDA = 4 -- 4 -- Sandline amplitude.
 local SANDR = 2 -- 2 -- Sandline randomness.
 local FMAV = 3 -- 3 -- Surface material average depth at sea level.
 local FMAMP = 2 -- 2 -- Surface material depth amplitude.
 
 local HITET = 0.25 -- 0.25 -- Desert / savanna / rainforest temperature noise threshold.
 local LOTET = -0.55 -- -0.55 -- Tundra / taiga temperature noise threshold.
-local HIWET = 0.25 -- 0.35 -- Wet grassland / rainforest wetness noise threshold.
-local LOWET = -0.55 -- -0.45 -- Tundra / dry grassland / desert wetness noise threshold.
+local HIWET = 0.25 -- 0.25 -- Wet grassland / rainforest wetness noise threshold.
+local LOWET = -0.55 -- -0.55 -- Tundra / dry grassland / desert wetness noise threshold.
 
 local TGRAD = 160 -- 160 -- Vertical temperature gradient. -- All 3 fall with altitude from y = 0
 local HGRAD = 160 -- 160 -- Vertical humidity gradient.
@@ -26,6 +28,7 @@ local FMGRAD = 40 -- 40 -- Surface material thinning gradient.
 local TUNGRACHA = 121 -- 121 -- Dry shrub 1/x chance per node in tundra.
 local TAIPINCHA = 64 -- 64 -- Pine 1/x chance per node in taiga.
 local DRYGRACHA = 2 -- 2 -- Dry shrub 1/x chance per node in dry grasslands.
+local DECGRACHA = 9 -- 9 -- Default grasses 1/x chance per node in deciduous forest.
 local DECAPPCHA = 64 -- 64 -- Appletree sapling 1/x chance per node in deciduous forest.
 local WETGRACHA = 2 -- 2 -- Junglegrass 1/x chance per node in wet grasslands.
 local DESCACCHA = 529 -- 529 -- Cactus 1/x chance per node in desert.
@@ -33,7 +36,7 @@ local DESGRACHA = 289 -- 289 -- Dry shrub 1/x chance per node in desert.
 local SAVGRACHA = 3 -- 3 -- Dry shrub 1/x chance per node in savanna.
 local SAVTRECHA = 361 -- 361 -- Savanna tree 1/x chance per node in savanna.
 local RAIJUNCHA = 16 -- 16 -- Jungletree 1/x chance per node in rainforest.
-local DUNGRACHA = 9 -- 9 -- Dry shrub 1/x chance per node in dunes.
+local DUNGRACHA = 9 -- 9 -- Dry shrub 1/x chance per node in sand dunes.
 local PAPCHA = 2 -- 2 -- Papyrus 1/x chance per node next to water in non-beach areas.
 
 local PININT = 67 -- 67 -- Pine from sapling abm interval in seconds.
@@ -118,12 +121,20 @@ if ONGEN then
 					local tai = false -- taiga forest biome
 					for y = y1, y0, -1 do -- working downwards through column for each node do
 						local watsur = false
+						local stable = true
 						local nodename = minetest.get_node({x=x,y=y,z=z}).name 
+						local unodename = minetest.get_node({x=x,y=y-1,z=z}).name
 						if nodename == "default:water_source" and y == 1 then
 							watsur = true
 						end
-						if nodename == "default:stone" or nodename == "default:stone_with_coal"
-						or nodename == "default:stone_with_iron" or watsur then -- if terrain or water surface then
+						if unodename == "air" then
+							stable = false
+						end
+						if watsur or stable
+						and (nodename == "default:stone"
+						or nodename == "default:stone_with_coal"
+						or nodename == "default:stone_with_iron"
+						or nodename == "default:stone_with_copper") then
 							if not col then -- when surface first found calculate sandy, fimadep2d, temp2d, hum2d for column
 								local noise5c = perlin5:get2d({x=x-777,y=z-777}) -- beach top
 								sandy = SANDY + noise5c * SANDA + math.random(0,SANDR)
@@ -165,7 +176,7 @@ if ONGEN then
 								if y < sandy then -- if beach, lakebed or dunes
 									minetest.add_node({x=x,y=y,z=z},{name="default:sand"})
 									if not sol then
-										if y > 3 and math.random(DUNGRACHA) == 2 then
+										if y > 3 and tre and math.random(DUNGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
 										elseif tai and y > 0 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:snowblock"})
@@ -175,7 +186,7 @@ if ONGEN then
 									end
 								elseif des then -- if desert
 									minetest.add_node({x=x,y=y,z=z},{name="default:desert_sand"})
-									if not sol and y > 8 then
+									if not sol and tre and y > 8 then
 										if math.random(DESGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
 										elseif math.random(DESCACCHA) == 2 then
@@ -187,7 +198,7 @@ if ONGEN then
 								elseif tun then -- if tundra
 									minetest.add_node({x=x,y=y,z=z},{name="paragenv7:permafrost"})
 									if not sol and y > 0 then
-										if math.random(TUNGRACHA) == 2 then
+										if tre and math.random(TUNGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
 										else
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:snow"})
@@ -196,11 +207,11 @@ if ONGEN then
 								elseif dry or sav then -- dry grassland or savanna
 									if not sol then -- if surface node then
 										minetest.add_node({x=x,y=y,z=z},{name="paragenv7:drygrass"})
-										if dry and y > 2 and math.random(DRYGRACHA) == 2 then
+										if dry and tre and y > 2 and math.random(DRYGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and y > 2 and math.random(SAVGRACHA) == 2 then
+										elseif sav and tre and y > 2 and math.random(SAVGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and y > -2 and tre and math.random(SAVTRECHA) == 2 then
+										elseif sav and tre and y > -2 and math.random(SAVTRECHA) == 2 then
 											paragenv7_stree({x=x,y=y+1,z=z})
 										end
 									else -- underground node
@@ -209,7 +220,7 @@ if ONGEN then
 								else -- wet grasslands, taiga, deciduous forest, rainforest
 									if not sol then
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
-										if wet and y > 0 and math.random(WETGRACHA) == 2 then
+										if wet and tre and y > 0 and math.random(WETGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:junglegrass"})
 										elseif dec and y > -2 and tre and math.random(DECAPPCHA) == 2 then
 											paragenv7_atree({x=x,y=y+1,z=z})
@@ -228,7 +239,7 @@ if ONGEN then
 								end
 								if not sol and y == 1 and y >= sandy and (des or sav or rai or wet)
 								and tre and math.random(PAPCHA) == 2 then -- papyrus
-									minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
+									minetest.add_node({x=x,y=y,z=z},{name="default:water_source"})
 									for j = 1, math.random(2,5) do
 										if minetest.get_node({x=x,y=y+j,z=z}).name == "air" then
 											minetest.add_node({x=x,y=y+j,z=z},{name="default:papyrus"})
