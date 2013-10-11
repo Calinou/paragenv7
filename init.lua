@@ -3,7 +3,6 @@
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
 -- TODO Add default:grass for wheat seeds
--- Make thin stone ledges stay as stone no unsupported sand / dirt
 
 -- Variables
 
@@ -121,21 +120,21 @@ if ONGEN then
 					local tai = false -- taiga forest biome
 					for y = y1, y0, -1 do -- working downwards through column for each node do
 						local watsur = false
-						local stable = true
-						local nodename = minetest.get_node({x=x,y=y,z=z}).name 
-						local unodename = minetest.get_node({x=x,y=y-1,z=z}).name
+						local nodename = minetest.get_node({x=x,y=y,z=z}).name
 						if nodename == "default:water_source" and y == 1 then
 							watsur = true
 						end
-						if unodename == "air" then
-							stable = false
-						end
-						if watsur or stable
-						and (nodename == "default:stone"
+						if watsur
+						or nodename == "default:stone"
 						or nodename == "default:stone_with_coal"
 						or nodename == "default:stone_with_iron"
-						or nodename == "default:stone_with_copper") then
-							if not col then -- when surface first found calculate sandy, fimadep2d, temp2d, hum2d for column
+						or nodename == "default:stone_with_copper" then
+							local unodename = minetest.get_node({x=x,y=y-1,z=z}).name
+							local stable = true
+							if unodename == "air" then
+								stable = false
+							end
+							if not col then -- when surface first found calculate parameters for column
 								local noise5c = perlin5:get2d({x=x-777,y=z-777}) -- beach top
 								sandy = SANDY + noise5c * SANDA + math.random(0,SANDR)
 								local noise5b = perlin5:get2d({x=x,y=z}) -- fine material depth
@@ -172,9 +171,13 @@ if ONGEN then
 									dec = true
 								end
 							end
-							if surfy - y < fimadep and not watsur then -- if fine material not water then
+							if surfy - y < fimadep and stable and not watsur then -- if stable fine material not water
 								if y < sandy then -- if beach, lakebed or dunes
-									minetest.add_node({x=x,y=y,z=z},{name="default:sand"})
+									if y == -1 and math.abs(noise6) < 0.1 then
+										minetest.add_node({x=x,y=y,z=z},{name="default:clay"})
+									else
+										minetest.add_node({x=x,y=y,z=z},{name="default:sand"})
+									end
 									if not sol then
 										if y > 3 and tre and math.random(DUNGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
@@ -209,10 +212,12 @@ if ONGEN then
 										minetest.add_node({x=x,y=y,z=z},{name="paragenv7:drygrass"})
 										if dry and tre and y > 2 and math.random(DRYGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and tre and y > 2 and math.random(SAVGRACHA) == 2 then
-											minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
-										elseif sav and tre and y > -2 and math.random(SAVTRECHA) == 2 then
-											paragenv7_stree({x=x,y=y+1,z=z})
+										elseif sav and tre then 
+											if y > 2 and math.random(SAVGRACHA) == 2 then
+												minetest.add_node({x=x,y=y+1,z=z},{name="default:dry_shrub"})
+											elseif y > -2 and math.random(SAVTRECHA) == 2 then
+												paragenv7_stree({x=x,y=y+1,z=z})
+											end
 										end
 									else -- underground node
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt"})
@@ -222,12 +227,16 @@ if ONGEN then
 										minetest.add_node({x=x,y=y,z=z},{name="default:dirt_with_grass"})
 										if wet and tre and y > 0 and math.random(WETGRACHA) == 2 then
 											minetest.add_node({x=x,y=y+1,z=z},{name="default:junglegrass"})
-										elseif dec and y > -2 and tre and math.random(DECAPPCHA) == 2 then
-											paragenv7_atree({x=x,y=y+1,z=z})
-										elseif tai then
-											if tre and y > 2 and math.random(TAIPINCHA) == 2 then
+										elseif dec and tre and y > 2 then
+											if math.random(DECAPPCHA) == 2 then
+												paragenv7_atree({x=x,y=y+1,z=z})
+											elseif math.random(DECGRACHA) == 2 then
+												minetest.add_node({x=x,y=y+1,z=z},{name="default:grass_"..math.random(1,5)})
+											end
+										elseif tai and y >= 1 then
+											if tre and math.random(TAIPINCHA) == 2 then
 												paragenv7_ptree({x=x,y=y+1,z=z})
-											elseif y > 0 then
+											else
 												minetest.add_node({x=x,y=y+1,z=z},{name="default:snowblock"})
 											end
 										elseif rai and y > -2 and tre and math.random(RAIJUNCHA) == 2 then
