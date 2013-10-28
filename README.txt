@@ -1,4 +1,4 @@
-paragenv7 0.1.0 by paramat
+paragenv7 0.1.1 by paramat
 For latest stable Minetest and back to 0.4.7
 Depends default
 Licenses: Code WTFPL. Textures: CC BY-SA.

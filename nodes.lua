@@ -105,3 +105,50 @@ minetest.register_node("paragenv7:jsapling", {
 	groups = {snappy=2,dig_immediate=3,flammable=2},
 	sounds = default.node_sound_defaults(),
 })
+
+minetest.register_node("paragenv7:swampsource", {
+	description = "PGV7 Swamp Water Source",
+	inventory_image = minetest.inventorycube("paragenv7_swampwater.png"),
+	tiles = {"paragenv7_swampwater.png"},
+	paramtype = "light",
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	liquidtype = "source",
+	liquid_alternative_flowing = "paragenv7:swampflowing",
+	liquid_alternative_source = "paragenv7:swampsource",
+	liquid_viscosity = 1,
+	post_effect_color = {a=255, r=119, g=132, b=50},
+	groups = {water=3, liquid=3, puts_out_fire=1},
+})
+
+minetest.register_node("paragenv7:swampflowing", {
+	description = "PGV7 Flowing Swamp Water",
+	inventory_image = minetest.inventorycube("paragenv7_swampwater.png"),
+	drawtype = "flowingliquid",
+	tiles = {"paragenv7_swampwater.png"},
+	special_tiles = {
+		{
+			image="paragenv7_swampwaterflowanim.png",
+			backface_culling=false,
+			animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}
+		},
+		{
+			image="paragenv7_swampwaterflowanim.png",
+			backface_culling=true,
+			animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}
+		},
+	},
+	paramtype = "light",
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	liquidtype = "flowing",
+	liquid_alternative_flowing = "paragenv7:swampflowing",
+	liquid_alternative_source = "paragenv7:swampsource",
+	liquid_viscosity = 1,
+	post_effect_color = {a=255, r=119, g=132, b=50},
+	groups = {water=3, liquid=3, puts_out_fire=1, not_in_creative_inventory=1},
+})
