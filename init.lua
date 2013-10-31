@@ -1,4 +1,4 @@
--- paragenv7 0.1.1 by paramat
+-- paragenv7 0.1.2 by paramat
 -- For latest stable Minetest and back to 0.4.7
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
@@ -253,9 +253,10 @@ if ONGEN then
 								end
 								if y == 0 and wat and y > sandy and (des or sav or rai)
 								and tre and math.random(PAPCHA) == 2 then -- if shallow water, non-sandy, hot biome
-									minetest.add_node({x=x,y=y+1,z=z},{name="paragenv7:swampsource"})
-									for j = 2, math.random(3,6) do -- papyrus
-										if minetest.get_node({x=x,y=y+j,z=z}).name == "air" then
+									local nodename = minetest.get_node({x=x,y=y+2,z=z}).name -- check for air above
+									if nodename == "air" then
+										minetest.add_node({x=x,y=y+1,z=z},{name="paragenv7:swampsource"})
+										for j = 2, math.random(2,4) do -- papyrus floating above water
 											minetest.add_node({x=x,y=y+j,z=z},{name="default:papyrus"})
 										end
 									end
@@ -273,7 +274,7 @@ if ONGEN then
 							end
 						else -- everything other than stone
 							sol = false -- node was not solid
-							if y == 1 then -- if sea surface then
+							if y == 1 then
 								local nodename = minetest.get_node({x=x,y=y,z=z}).name -- check for water
 								if nodename == "default:water_source" then
 									wat = true -- node was water

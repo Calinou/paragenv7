@@ -109,7 +109,8 @@ minetest.register_node("paragenv7:jsapling", {
 minetest.register_node("paragenv7:swampsource", {
 	description = "PGV7 Swamp Water Source",
 	inventory_image = minetest.inventorycube("paragenv7_swampwater.png"),
-	tiles = {"paragenv7_swampwater.png"},
+	-- drawtype = "liquid",
+	tiles = {"paragenv7_swampwatertop.png", "paragenv7_swampwater.png"},
 	paramtype = "light",
 	walkable = false,
 	pointable = false,
@@ -119,7 +120,7 @@ minetest.register_node("paragenv7:swampsource", {
 	liquid_alternative_flowing = "paragenv7:swampflowing",
 	liquid_alternative_source = "paragenv7:swampsource",
 	liquid_viscosity = 1,
-	post_effect_color = {a=255, r=119, g=132, b=50},
+	post_effect_color = {a=224, r=31, g=56, b=8},
 	groups = {water=3, liquid=3, puts_out_fire=1},
 })
 
@@ -140,6 +141,7 @@ minetest.register_node("paragenv7:swampflowing", {
 			animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}
 		},
 	},
+	-- alpha = 224,
 	paramtype = "light",
 	walkable = false,
 	pointable = false,
@@ -149,6 +151,6 @@ minetest.register_node("paragenv7:swampflowing", {
 	liquid_alternative_flowing = "paragenv7:swampflowing",
 	liquid_alternative_source = "paragenv7:swampsource",
 	liquid_viscosity = 1,
-	post_effect_color = {a=255, r=119, g=132, b=50},
+	post_effect_color = {a=224, r=31, g=56, b=8},
 	groups = {water=3, liquid=3, puts_out_fire=1, not_in_creative_inventory=1},
 })
