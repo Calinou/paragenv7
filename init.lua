@@ -1,7 +1,8 @@
--- paragenv7 0.1.2 by paramat
+-- paragenv7 0.1.3 by paramat
 -- For latest stable Minetest and back to 0.4.7
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
+-- TODO deeper structural stone in overhangs, that tapers with an overhang? or just a minimum of 4 or so?
 
 -- Variables
 
@@ -220,6 +221,8 @@ if ONGEN then
 												minetest.add_node({x=x,y=y+1,z=z},{name="paragenv7:swampsource"})
 											end
 										end
+									else
+										minetest.add_node({x=x,y=y,z=z},{name="default:dirt"})
 									end
 								else -- wet grasslands, taiga, deciduous forest, rainforest
 									if not sol then
@@ -249,6 +252,8 @@ if ONGEN then
 												minetest.add_node({x=x,y=y+1,z=z},{name="paragenv7:swampsource"})
 											end
 										end
+									else
+										minetest.add_node({x=x,y=y,z=z},{name="default:dirt"})
 									end
 								end
 								if y == 0 and wat and y > sandy and (des or sav or rai)

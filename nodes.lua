@@ -154,3 +154,28 @@ minetest.register_node("paragenv7:swampflowing", {
 	post_effect_color = {a=224, r=31, g=56, b=8},
 	groups = {water=3, liquid=3, puts_out_fire=1, not_in_creative_inventory=1},
 })
+
+minetest.register_node("paragenv7:airlike", {
+	drawtype = "airlike",
+	tiles = {""},
+	paramtype = "light",
+	sunlight_propagates = true,
+	walkable = false,
+	pointable = true,
+	diggable = false,
+	buildable_to = true,
+	groups = {not_in_creative_inventory=1},
+})
+
+minetest.register_node("paragenv7:fog", {
+	drawtype = "glasslike",
+	tiles = {"paragenv7_fog.png"},
+	paramtype = "light",
+	sunlight_propagates = true,
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	post_effect_color = {a=63, r=241, g=248, b=255},
+	groups = {not_in_creative_inventory=1},
+})
