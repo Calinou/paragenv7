@@ -1,127 +1,185 @@
--- Functions
-
--- Jungletree
-
-function paragenv7_jtree(pos)
-	local t = 12 + math.random(5) -- trunk height
-	for j = -3, t do
-		if j == math.floor(t * 0.7) or j == t then
+function paragenv7_appletree(x, y, z, area, data)
+	local c_tree = minetest.get_content_id("default:tree")
+	local c_apple = minetest.get_content_id("default:apple")
+	local c_leaves = minetest.get_content_id("default:leaves")
+	for j = -2, 4 do
+		if j >= 1 then
 			for i = -2, 2 do
 			for k = -2, 2 do
-				local absi = math.abs(i)
-				local absk = math.abs(k)
-				if math.random() > (absi + absk) / 24 then
-					minetest.add_node({x=pos.x+i,y=pos.y+j+math.random(0, 1),z=pos.z+k},{name="paragenv7:jleaf"})
+				local vil = area:index(x + i, y + j + 1, z + k)
+				if math.random(48) == 2 then
+					data[vil] = c_apple
+				elseif math.random(3) ~= 2 then
+					data[vil] = c_leaves
 				end
 			end
 			end
 		end
-		minetest.add_node({x=pos.x,y=pos.y+j,z=pos.z},{name="default:jungletree"})
+		local vit = area:index(x, y + j, z)
+		data[vit] = c_tree
 	end
 end
 
--- Savanna tree
-
-function paragenv7_stree(pos)
-	local t = 4 + math.random(3) -- trunk height
-	for j = -2, t do
-		if j == t then
-			for i = -3, 3 do
-			for k = -3, 3 do
-				local absi = math.abs(i)
-				local absk = math.abs(k)
-				if math.random() > (absi + absk) / 24 then
-					minetest.add_node({x=pos.x+i,y=pos.y+j+math.random(0, 1),z=pos.z+k},{name="paragenv7:sleaf"})
+function paragenv7_pinetree(x, y, z, area, data)
+	local c_tree = minetest.get_content_id("default:tree")
+	local c_pg7needles = minetest.get_content_id("paragenv7:needles")
+	local c_snowblock = minetest.get_content_id("default:snowblock")
+	for j = -4, 13 do
+		if j == 3 or j == 6 or j == 9 or j == 12 then
+			for i = -2, 2 do
+			for k = -2, 2 do
+				if math.abs(i) == 2 or math.abs(k) == 2 then
+					if math.random(5) ~= 2 then
+						local vil = area:index(x + i, y + j, z + k)
+						data[vil] = c_pg7needles
+						local vila = area:index(x + i, y + j + 1, z + k)
+						data[vila] = c_snowblock
+					end
+				end
+			end
+			end
+		elseif j == 4 or j == 7 or j == 10 or j == 13 then
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if not (i == 0 and j == 0) then
+					if math.random(7) ~= 2 then
+						local vil = area:index(x + i, y + j, z + k)
+						data[vil] = c_pg7needles
+						local vila = area:index(x + i, y + j + 1, z + k)
+						data[vila] = c_snowblock
+					end
 				end
 			end
 			end
 		end
-		minetest.add_node({x=pos.x,y=pos.y+j,z=pos.z},{name="default:tree"})
+		local vit = area:index(x, y + j, z)
+		data[vit] = c_tree
+	end
+	local vil = area:index(x, y + 14, z)
+	local vila = area:index(x, y + 15, z)
+	local vilaa = area:index(x, y + 16, z)
+	data[vil] = c_pg7needles
+	data[vila] = c_pg7needles
+	data[vilaa] = c_snowblock
+end
+
+function paragenv7_jungletree(x, y, z, area, data)
+	local c_juntree = minetest.get_content_id("default:jungletree")
+	local c_pg7junleaf = minetest.get_content_id("paragenv7:jungleleaf")
+	for j = -5, 17 do
+		if j == 11 or j == 17 then
+			for i = -2, 2 do
+			for k = -2, 2 do
+				local vil = area:index(x + i, y + j + math.random(0, 1), z + k)
+				if math.random(5) ~= 2 then
+					data[vil] = c_pg7junleaf
+				end
+			end
+			end
+		end
+		local vit = area:index(x, y + j, z)
+		data[vit] = c_juntree
 	end
 end
 
--- Pine tree
-
-function paragenv7_ptree(pos)
-	local t = 10 + math.random(3) -- trunk height
-	for i = -2, 2 do
-	for k = -2, 2 do
-		local absi = math.abs(i)
-		local absk = math.abs(k)
-		if absi >= absk then
-			j = t - absi
+function paragenv7_acaciatree(x, y, z, area, data)
+	local c_tree = minetest.get_content_id("default:tree")
+	local c_leaves = minetest.get_content_id("default:leaves")
+	for j = -3, 7 do
+		if j == 7 then
+			for i = -4, 4 do
+			for k = -4, 4 do
+				if not (i == 0 or k == 0) then
+					if math.random(5) ~= 2 then
+						local vil = area:index(x + i, y + j, z + k)
+						data[vil] = c_leaves
+					end
+				end
+			end
+			end
+		elseif j == 6 then
+			for i = -2, 2, 4 do
+			for k = -2, 2, 4 do
+				local vit = area:index(x + i, y + j, z + k)
+				data[vit] = c_tree
+			end
+			end
+		elseif j == 5 then
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if math.abs(i) + math.abs(k) == 2 then
+					local vit = area:index(x + i, y + j, z + k)
+					data[vit] = c_tree
+				end
+			end
+			end
 		else
-			j = t - absk
+			local vit = area:index(x, y + j, z)
+			data[vit] = c_tree
 		end
-		if math.random() > (absi + absk) / 24 then
-			minetest.add_node({x=pos.x+i,y=pos.y+j+2,z=pos.z+k},{name="default:snow"})
-			minetest.add_node({x=pos.x+i,y=pos.y+j+1,z=pos.z+k},{name="paragenv7:pleaf"})
-			minetest.add_node({x=pos.x+i,y=pos.y+j-1,z=pos.z+k},{name="default:snow"})
-			minetest.add_node({x=pos.x+i,y=pos.y+j-2,z=pos.z+k},{name="paragenv7:pleaf"})
-			minetest.add_node({x=pos.x+i,y=pos.y+j-4,z=pos.z+k},{name="default:snow"})
-			minetest.add_node({x=pos.x+i,y=pos.y+j-5,z=pos.z+k},{name="paragenv7:pleaf"})
-		end
-	end
-	end
-	for j = -3, t do
-		minetest.add_node({x=pos.x,y=pos.y+j,z=pos.z},{name="default:tree"})
 	end
 end
 
--- Apple tree
-
-function paragenv7_atree(pos)
-	local t = 4 + math.random(2) -- trunk height
-	for j = -2, t do
-		if j == t or j == t - 2 then
-			for i = -2, 2 do
-			for k = -2, 2 do
-				local absi = math.abs(i)
-				local absk = math.abs(k)
-				if math.random() > (absi + absk) / 24 then
-					minetest.add_node({x=pos.x+i,y=pos.y+j+math.random(0, 1),z=pos.z+k},{name="default:leaves"})
-				end
-			end
-			end
-		end
-		minetest.add_node({x=pos.x,y=pos.y+j,z=pos.z},{name="default:tree"})
+function paragenv7_grass(data, vi)
+	local c_grass1 = minetest.get_content_id("default:grass_1")
+	local c_grass2 = minetest.get_content_id("default:grass_2")
+	local c_grass3 = minetest.get_content_id("default:grass_3")
+	local c_grass4 = minetest.get_content_id("default:grass_4")
+	local c_grass5 = minetest.get_content_id("default:grass_5")
+	local rand = math.random(5)
+	if rand == 1 then
+		data[vi] = c_grass1
+	elseif rand == 2 then
+		data[vi] = c_grass2
+	elseif rand == 3 then
+		data[vi] = c_grass3
+	elseif rand == 4 then
+		data[vi] = c_grass4
+	else
+		data[vi] = c_grass5
 	end
 end
 
--- ABMs
+function paragenv7_flower(data, vi)
+	local c_danwhi = minetest.get_content_id("flowers:dandelion_white")
+	local c_danyel = minetest.get_content_id("flowers:dandelion_yellow")
+	local c_rose = minetest.get_content_id("flowers:rose")
+	local c_tulip = minetest.get_content_id("flowers:tulip")
+	local c_geranium = minetest.get_content_id("flowers:geranium")
+	local c_viola = minetest.get_content_id("flowers:viola")
+	local rand = math.random(6)
+	if rand == 1 then
+		data[vi] = c_danwhi
+	elseif rand == 2 then
+		data[vi] = c_rose
+	elseif rand == 3 then
+		data[vi] = c_tulip
+	elseif rand == 4 then
+		data[vi] = c_danyel
+	elseif rand == 5 then
+		data[vi] = c_geranium
+	else
+		data[vi] = c_viola
+	end
+end
 
--- Pine sapling
+function paragenv7_cactus(x, y, z, area, data)
+	local c_pg7cactus = minetest.get_content_id("paragenv7:cactus")
+	for j = -2, 4 do
+	for i = -2, 2 do
+		if i == 0 or j == 2 or (j == 3 and math.abs(i) == 2) then
+			local vic = area:index(x + i, y + j, z)
+			data[vic] = c_wscactus
+		end
+	end
+	end
+end
 
-minetest.register_abm({
-    nodenames = {"paragenv7:psapling"},
-    interval = PININT,
-    chance = PINCHA,
-    action = function(pos, node, active_object_count, active_object_count_wider)
-		paragenv7_ptree(pos)
-		print ("[paragenv7] Pine sapling grows")
-    end
-})
-
--- Jungletree sapling
-
-minetest.register_abm({
-    nodenames = {"paragenv7:jsapling"},
-    interval = JUNINT,
-    chance = JUNCHA,
-    action = function(pos, node, active_object_count, active_object_count_wider)
-		paragenv7_jtree(pos)
-		print ("[paragenv7] Jungletree sapling grows")
-    end,
-})
-
--- Savanna tree sapling
-
-minetest.register_abm({
-    nodenames = {"paragenv7:ssapling"},
-    interval = SAVINT,
-    chance = SAVCHA,
-    action = function(pos, node, active_object_count, active_object_count_wider)
-		paragenv7_stree(pos)
-		print ("[paragenv7] Savanna tree sapling grows")
-    end,
-})
+function paragenv7_papyrus(x, y, z, area, data)
+	local c_papyrus = minetest.get_content_id("default:papyrus")
+	local ph = math.random(1, 4)
+	for j = 1, ph do
+		local vip = area:index(x, y + j, z)
+		data[vip] = c_papyrus
+	end
+end
