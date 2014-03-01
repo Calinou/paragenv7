@@ -1,10 +1,6 @@
 paragenv7 0.2.0 by paramat
-For latest stable Minetest and back to 0.4.7 stable
+For latest stable Minetest and back to 0.4.8
 Depends default
-Licenses: Code WTFPL. Textures: CC BY-SA.
+Licenses: code WTFPL, textures CC BY-SA
 
-For use with mapgen V7 bare stone terrain.
-Use Mapgen V7 with this line in minetest.conf:
-mg_name = v7
-Enable default dungeons with this line in minetest.conf:
-mg_flags = dungeons
+For use with mapgen v7 stone terrain.
