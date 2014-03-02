@@ -93,7 +93,7 @@ end
 
 function paragenv7_acaciatree(x, y, z, area, data)
 	local c_tree = minetest.get_content_id("default:tree")
-	local c_leaves = minetest.get_content_id("default:leaves")
+	local c_acacialeaf = minetest.get_content_id("paragenv7:acacialeaf")
 	for j = -3, 7 do
 		if j == 7 then
 			for i = -4, 4 do
@@ -101,7 +101,7 @@ function paragenv7_acaciatree(x, y, z, area, data)
 				if not (i == 0 or k == 0) then
 					if math.random(5) ~= 2 then
 						local vil = area:index(x + i, y + j, z + k)
-						data[vil] = c_leaves
+						data[vil] = c_acacialeaf
 					end
 				end
 			end
@@ -178,7 +178,7 @@ function paragenv7_cactus(x, y, z, area, data)
 	for i = -2, 2 do
 		if i == 0 or j == 2 or (j == 3 and math.abs(i) == 2) then
 			local vic = area:index(x + i, y + j, z)
-			data[vic] = c_wscactus
+			data[vic] = c_pg7cactus
 		end
 	end
 	end

@@ -1,15 +1,7 @@
--- paragenv7 0.2.1 by paramat
+-- paragenv7 0.3.0 by paramat
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
-
--- snowplains biome to make 9
--- jungletrees have large roots
--- papyrus
--- soil thickness vary with humidity and altitude
--- dunes with grasses
--- TODO
--- sandline variation
 
 -- Parameters
 
@@ -28,7 +20,7 @@ local JUTCHA = 16 -- Jungletree
 local JUGCHA = 9 -- Junglegrass
 local CACCHA = 841 -- Cactus
 local DRYCHA = 169 -- Dry shrub
-local PAPCHA = 2 -- Papyrus
+local PAPCHA = 3 -- Papyrus
 local ACACHA = 841 -- Acacia tree
 local GOGCHA = 3 -- Golden grass
 local DUGCHA = 5 -- Dune grass
@@ -93,6 +85,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_dryshrub = minetest.get_content_id("default:dry_shrub")
 	local c_clay = minetest.get_content_id("default:clay")
 	local c_stone = minetest.get_content_id("default:stone")
+	local c_desertstone = minetest.get_content_id("default:desert_stone")
 	local c_stonecopper = minetest.get_content_id("default:stone_with_copper")
 	local c_stoneiron = minetest.get_content_id("default:stone_with_iron")
 	local c_stonecoal = minetest.get_content_id("default:stone_with_coal")
@@ -143,35 +136,37 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			end
 		end
 		
-		local sandy = 4
-		
-		local stodep = 0 -- number of consecutive stone nodes
-		local lasurfy = 0 -- last surface y
+		local sandy = 4 + math.random(-1, 1)
 		local open = true -- open to sky?
-		local primed = false -- surface addition primed by non-solid node?
+		local solid = true -- solid node above?
+		local surfy = y1 + 80 -- y of last surface detected
 		for y = y1, y0, -1 do -- working down each column for each node do
-			local fimadep = math.floor(4 - y / 16 + n_humid * 2)
+			local fimadep = math.max(math.floor(6 - y / 16), 0)
 			local vi = area:index(x, y, z)
 			local nodid = data[vi]
-			if y ~= y0
-			and (nodid == c_stone
+			local viuu = area:index(x, y - 2, z)
+			local nodiduu = data[viuu]
+			if nodid == c_stone
 			or nodid == c_stonecopper
 			or nodid == c_stoneiron
-			or nodid == c_stonecoal) then
-				if stodep == 0 and y ~= y1 then -- if stone below air or water
-					lasurfy = y
+			or nodid == c_stonecoal then
+				if biome == 7 then
+					data[vi] = c_desertstone
 				end
-				stodep = stodep + 1
-			elseif nodid == c_air or nodid == c_water or y == y0 then
-				if nodid == c_water and y == 1 and n_temp < ICETET then -- ice
-					data[vi] = c_ice
-				end
-				
-				if primed and lasurfy > sandy and stodep >= 3 and fimadep > 0 then
-					local acdirtdep = math.min(stodep - 2, fimadep)
-					for y = lasurfy, lasurfy - acdirtdep + 1, -1 do -- fine materials
-						local vi = area:index(x, y, z)
-						if y == lasurfy then -- surface nodes
+				if not solid then -- surface
+					surfy = y
+					if nodiduu ~= c_air and nodiduu ~= c_water and fimadep >= 1 then
+						if y <= sandy then
+							data[vi] = c_sand
+							if open and y == 0 and biome >= 7
+							and math.random(PAPCHA) == 2 then -- papyrus
+								paragenv7_papyrus(x, 2, z, area, data)
+							end
+							if open and y >= 4 and math.random(DUGCHA) == 2 then -- dune grass
+								local vi = area:index(x, y + 1, z)
+								data[vi] = c_pg7goldengrass
+							end
+						else
 							if biome == 1 then
 								if math.random(121) == 2 then
 									data[vi] = c_ice
@@ -189,97 +184,89 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							else
 								data[vi] = c_pg7grass
 							end
-						else -- under surface
-							if biome == 1 then
-								if math.random(121) == 2 then
-									data[vi] = c_ice
-								else
-									data[vi] = c_pg7permafrost
+							if open then -- flora
+								local y = surfy + 1
+								local vi = area:index(x, y, z)
+								if biome == 1 then
+									if math.random(DRYCHA) == 2 then
+										data[vi] = c_dryshrub
+									end
+								elseif biome == 2 then
+									data[vi] = c_snowblock
+								elseif biome == 3 then
+									if math.random(PINCHA) == 2 then
+										paragenv7_pinetree(x, y, z, area, data)
+									else
+										data[vi] = c_snowblock
+									end
+								elseif biome == 4 then
+									if math.random(GRACHA) == 2 then
+										if math.random(5) == 2 then
+											data[vi] = c_pg7goldengrass
+										else
+											data[vi] = c_dryshrub
+										end
+									end
+								elseif biome == 5 then
+									if math.random(FLOCHA) == 2 then
+										paragenv7_flower(data, vi)
+									elseif math.random(GRACHA) == 2 then
+										paragenv7_grass(data, vi)
+									end
+								elseif biome == 6 then
+									if math.random(APTCHA) == 2 then
+										paragenv7_appletree(x, y, z, area, data)
+									elseif math.random(FLOCHA) == 2 then
+										paragenv7_flower(data, vi)
+									elseif math.random(FOGCHA) == 2 then
+										paragenv7_grass(data, vi)
+									end
+								elseif biome == 7 then
+									if math.random(CACCHA) == 2 then
+										paragenv7_cactus(x, y, z, area, data)
+									elseif math.random(DRYCHA) == 2 then
+										data[vi] = c_dryshrub
+									end
+								elseif biome == 8 then
+									if math.random(ACACHA) == 2 then
+										paragenv7_acaciatree(x, y, z, area, data)
+									elseif math.random(GOGCHA) == 2 then
+										data[vi] = c_pg7goldengrass
+									end
+								elseif biome == 9 then
+									if math.random(JUTCHA) == 2 then
+										paragenv7_jungletree(x, y, z, area, data)
+									elseif math.random(JUGCHA) == 2 then
+										data[vi] = c_jungrass
+									end
 								end
-							elseif biome == 7 then
-								data[vi] = c_desertsand
-							else
-								data[vi] = c_pg7dirt
 							end
 						end
 					end
-					if open then -- add flora / snow
-						local y = lasurfy + 1
-						local vi = area:index(x, y, z)
-						if biome == 1 then
-							if math.random(DRYCHA) == 2 then
-								data[vi] = c_dryshrub
-							end
-						elseif biome == 2 then
-							data[vi] = c_snowblock
-						elseif biome == 3 then
-							if math.random(PINCHA) == 2 then
-								paragenv7_pinetree(x, y, z, area, data)
+				else -- underground
+					if nodiduu ~= c_air and nodiduu ~= c_water and surfy - y + 1 <= fimadep then
+						if y <= sandy then
+							data[vi] = c_sand
+						elseif biome == 1 then
+							if math.random(121) == 2 then
+								data[vi] = c_ice
 							else
-								data[vi] = c_snowblock
-							end
-						elseif biome == 4 then
-							if math.random(GRACHA) == 2 then
-								if math.random(5) == 2 then
-									data[vi] = c_pg7goldengrass
-								else
-									data[vi] = c_dryshrub
-								end
-							end
-						elseif biome == 5 then
-							if math.random(FLOCHA) == 2 then
-								paragenv7_flower(data, vi)
-							elseif math.random(GRACHA) == 2 then
-								paragenv7_grass(data, vi)
-							end
-						elseif biome == 6 then
-							if math.random(APTCHA) == 2 then
-								paragenv7_appletree(x, y, z, area, data)
-							elseif math.random(FLOCHA) == 2 then
-								paragenv7_flower(data, vi)
-							elseif math.random(FOGCHA) == 2 then
-								paragenv7_grass(data, vi)
+								data[vi] = c_pg7permafrost
 							end
 						elseif biome == 7 then
-							if math.random(CACCHA) == 2 then
-								paragenv7_cactus(x, y, z, area, data)
-							elseif math.random(DRYCHA) == 2 then
-								data[vi] = c_dryshrub
-							end
-						elseif biome == 8 then
-							if math.random(ACACHA) == 2 then
-								paragenv7_acaciatree(x, y, z, area, data)
-							elseif math.random(GOGCHA) == 2 then
-								data[vi] = c_pg7goldengrass
-							end
-						elseif biome == 9 then
-							if math.random(JUTCHA) == 2 then
-								paragenv7_jungletree(x, y, z, area, data)
-							elseif math.random(JUGCHA) == 2 then
-								data[vi] = c_jungrass
-							end
+							data[vi] = c_desertsand
+						else
+							data[vi] = c_pg7dirt
 						end
 					end
-					open = false
-					primed = false
-				elseif primed and lasurfy <= sandy and stodep >= 3 then -- sand
-					local acsanddep = math.min(stodep - 2, 5)
-					for y = lasurfy, lasurfy - acsanddep + 1, -1 do
-						local vi = area:index(x, y, z)
-						data[vi] = c_sand
-					end
-					if lasurfy == 0 and biome >= 7 and math.random(PAPCHA) == 2 then -- papyrus
-						paragenv7_papyrus(x, 2, z, area, data)
-					elseif lasurfy >= 4 and math.random(DUGCHA) == 2 then -- dune grass
-						local vi = area:index(x, lasurfy + 1, z)
-						data[vi] = c_pg7goldengrass
-					end
-					open = false
-					primed = false
-				elseif nodid == c_air or nodid == c_water then
-					primed = true
 				end
-				stodep = 0
+				open = false
+				solid = true
+			elseif nodid == c_air or nodid == c_water then
+				if nodid == c_water and y == 1 and n_temp < ICETET then -- ice
+					data[vi] = c_ice
+				end
+				solid = false
 			end
 		end
 		nixz = nixz + 1

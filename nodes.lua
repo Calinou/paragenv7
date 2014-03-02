@@ -78,6 +78,17 @@ minetest.register_node("paragenv7:jungleleaf", {
 	sounds = default.node_sound_leaves_defaults(),
 })
 
+minetest.register_node("paragenv7:acacialeaf", {
+	description = "PG7 Acacia Leaves",
+	drawtype = "allfaces_optional",
+	visual_scale = 1.3,
+	tiles = {"default_leaves.png"},
+	paramtype = "light",
+	is_ground_content = false,
+	groups = {snappy=3, leafdecay=4, flammable=2, leaves=1},
+	sounds = default.node_sound_leaves_defaults(),
+})
+
 minetest.register_node("paragenv7:needles", {
 	description = "PG7 Pine Needles",
 	tiles = {"paragenv7_needles.png"},
