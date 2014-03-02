@@ -1,22 +1,27 @@
--- paragenv7 0.2.0 by paramat
+-- paragenv7 0.2.1 by paramat
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
 
+-- snowplains biome to make 9
+-- jungletrees have large roots
+-- papyrus
+-- soil thickness vary with humidity and altitude
+-- dunes with grasses
+-- TODO
+-- sandline variation
+
 -- Parameters
 
-local DEPTH = 5 -- 
+local HITET = 0.4 -- High temperature threshold
+local LOTET = -0.4 -- Low ..
+local ICETET = -0.8 -- Ice ..
+local HIHUT = 0.4 -- High humidity threshold
+local LOHUT = -0.4 -- Low ..
 
-local HITET = 0.5 --
-local LOTET = -0.5 -- 
-local ICETET = -0.8 -- 
-local HIHUT = 0.5 -- 
-local MIDHUT = 0 -- 
-local LOHUT = -0.5 --
-
-local PINCHA = 47 -- Pine tree 1/x chance per surface node
-local APTCHA = 47 -- Appletree
-local FLOCHA = 47 -- Flower
+local PINCHA = 49 -- Pine tree 1/x chance per surface node
+local APTCHA = 49 -- Appletree
+local FLOCHA = 49 -- Flower
 local FOGCHA = 9 -- Forest grass
 local GRACHA = 3 -- Grassland grasses
 local JUTCHA = 16 -- Jungletree
@@ -26,16 +31,17 @@ local DRYCHA = 169 -- Dry shrub
 local PAPCHA = 2 -- Papyrus
 local ACACHA = 841 -- Acacia tree
 local GOGCHA = 3 -- Golden grass
+local DUGCHA = 5 -- Dune grass
 
 -- 2D noise for temperature
 
 local np_temp = {
 	offset = 0,
 	scale = 1,
-	spread = {x=512, y=512, z=512},
+	spread = {x=256, y=256, z=256},
 	seed = 9130,
 	octaves = 3,
-	persist = 0.5
+	persist = 0.4
 }
 
 -- 2D noise for humidity
@@ -43,21 +49,10 @@ local np_temp = {
 local np_humid = {
 	offset = 0,
 	scale = 1,
-	spread = {x=512, y=512, z=512},
+	spread = {x=256, y=256, z=256},
 	seed = -5500,
 	octaves = 3,
-	persist = 0.5
-}
-
--- 2D noise for dirt / sand depth, sandline
-
-local np_depth = {
-	offset = 0,
-	scale = 1,
-	spread = {x=512, y=512, z=512},
-	seed = 886611390,
-	octaves = 3,
-	persist = 0.6
+	persist = 0.4
 }
 
 -- Stuff
@@ -115,43 +110,47 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	
 	local nvals_temp = minetest.get_perlin_map(np_temp, chulens):get2dMap_flat(minposxz)
 	local nvals_humid = minetest.get_perlin_map(np_humid, chulens):get2dMap_flat(minposxz)
-	local nvals_depth = minetest.get_perlin_map(np_depth, chulens):get2dMap_flat(minposxz)
 	
 	local nixz = 1
 	for z = z0, z1 do
 	for x = x0, x1 do -- for each column do
-		local n_temp = nvals_temp[nixz]
+		local n_temp = nvals_temp[nixz] -- select biome
 		local n_humid = nvals_humid[nixz]
-		local biome = false -- select biome for column
+		local biome = false
 		if n_temp < LOTET then
-			if n_humid < MIDHUT then
+			if n_humid < LOHUT then
 				biome = 1 -- tundra
+			elseif n_humid > HIHUT then
+				biome = 3 -- taiga
 			else
-				biome = 2 -- taiga
+				biome = 2 -- snowplains
 			end
 		elseif n_temp > HITET then
 			if n_humid < LOHUT then
-				biome = 6 -- desert
+				biome = 7 -- desert
 			elseif n_humid > HIHUT then
-				biome = 8 -- rainforest
+				biome = 9 -- rainforest
 			else
-				biome = 7 -- savanna
+				biome = 8 -- savanna
 			end
 		else
 			if n_humid < LOHUT then
-				biome = 3 -- dry grassland
+				biome = 4 -- dry grassland
 			elseif n_humid > HIHUT then
-				biome = 5 -- deciduous forest
+				biome = 6 -- deciduous forest
 			else
-				biome = 4 -- grassland
+				biome = 5 -- grassland
 			end
 		end
+		
+		local sandy = 4
 		
 		local stodep = 0 -- number of consecutive stone nodes
 		local lasurfy = 0 -- last surface y
 		local open = true -- open to sky?
 		local primed = false -- surface addition primed by non-solid node?
 		for y = y1, y0, -1 do -- working down each column for each node do
+			local fimadep = math.floor(4 - y / 16 + n_humid * 2)
 			local vi = area:index(x, y, z)
 			local nodid = data[vi]
 			if y ~= y0
@@ -168,25 +167,37 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					data[vi] = c_ice
 				end
 				
-				if primed and lasurfy >= 5 and stodep >= 3 then
-					local acdirtdep = math.min(stodep - 2, 5)
+				if primed and lasurfy > sandy and stodep >= 3 and fimadep > 0 then
+					local acdirtdep = math.min(stodep - 2, fimadep)
 					for y = lasurfy, lasurfy - acdirtdep + 1, -1 do -- fine materials
 						local vi = area:index(x, y, z)
 						if y == lasurfy then -- surface nodes
-							if biome == 1 or biome == 3 or biome == 7 then
+							if biome == 1 then
+								if math.random(121) == 2 then
+									data[vi] = c_ice
+								elseif math.random(25) == 2 then
+									data[vi] = c_dirtsnow
+								else
+									data[vi] = c_pg7drygrass
+								end
+							elseif biome == 4 or biome == 8 then
 								data[vi] = c_pg7drygrass
-							elseif biome == 2 then
+							elseif biome == 2 or biome == 3 then
 								data[vi] = c_dirtsnow
-							elseif biome == 6 then
+							elseif biome == 7 then
 								data[vi] = c_desertsand
 							else
 								data[vi] = c_pg7grass
 							end
 						else -- under surface
-							if biome == 6 then
+							if biome == 1 then
+								if math.random(121) == 2 then
+									data[vi] = c_ice
+								else
+									data[vi] = c_pg7permafrost
+								end
+							elseif biome == 7 then
 								data[vi] = c_desertsand
-							elseif biome == 1 then
-								data[vi] = c_pg7permafrost
 							else
 								data[vi] = c_pg7dirt
 							end
@@ -200,12 +211,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
 								data[vi] = c_dryshrub
 							end
 						elseif biome == 2 then
+							data[vi] = c_snowblock
+						elseif biome == 3 then
 							if math.random(PINCHA) == 2 then
 								paragenv7_pinetree(x, y, z, area, data)
 							else
 								data[vi] = c_snowblock
 							end
-						elseif biome == 3 then
+						elseif biome == 4 then
 							if math.random(GRACHA) == 2 then
 								if math.random(5) == 2 then
 									data[vi] = c_pg7goldengrass
@@ -213,17 +226,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 									data[vi] = c_dryshrub
 								end
 							end
-						elseif biome == 4 then
+						elseif biome == 5 then
 							if math.random(FLOCHA) == 2 then
 								paragenv7_flower(data, vi)
 							elseif math.random(GRACHA) == 2 then
-								if math.random(11) == 2 then
-									data[vi] = c_pg7goldengrass
-								else
-									paragenv7_grass(data, vi)
-								end
+								paragenv7_grass(data, vi)
 							end
-						elseif biome == 5 then
+						elseif biome == 6 then
 							if math.random(APTCHA) == 2 then
 								paragenv7_appletree(x, y, z, area, data)
 							elseif math.random(FLOCHA) == 2 then
@@ -231,19 +240,19 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							elseif math.random(FOGCHA) == 2 then
 								paragenv7_grass(data, vi)
 							end
-						elseif biome == 6 then
+						elseif biome == 7 then
 							if math.random(CACCHA) == 2 then
 								paragenv7_cactus(x, y, z, area, data)
 							elseif math.random(DRYCHA) == 2 then
 								data[vi] = c_dryshrub
 							end
-						elseif biome == 7 then
+						elseif biome == 8 then
 							if math.random(ACACHA) == 2 then
 								paragenv7_acaciatree(x, y, z, area, data)
 							elseif math.random(GOGCHA) == 2 then
 								data[vi] = c_pg7goldengrass
 							end
-						elseif biome == 8 then
+						elseif biome == 9 then
 							if math.random(JUTCHA) == 2 then
 								paragenv7_jungletree(x, y, z, area, data)
 							elseif math.random(JUGCHA) == 2 then
@@ -253,11 +262,17 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					end
 					open = false
 					primed = false
-				elseif primed and lasurfy < 5 and stodep >= 3 then -- sand
+				elseif primed and lasurfy <= sandy and stodep >= 3 then -- sand
 					local acsanddep = math.min(stodep - 2, 5)
 					for y = lasurfy, lasurfy - acsanddep + 1, -1 do
 						local vi = area:index(x, y, z)
 						data[vi] = c_sand
+					end
+					if lasurfy == 0 and biome >= 7 and math.random(PAPCHA) == 2 then -- papyrus
+						paragenv7_papyrus(x, 2, z, area, data)
+					elseif lasurfy >= 4 and math.random(DUGCHA) == 2 then -- dune grass
+						local vi = area:index(x, lasurfy + 1, z)
+						data[vi] = c_pg7goldengrass
 					end
 					open = false
 					primed = false

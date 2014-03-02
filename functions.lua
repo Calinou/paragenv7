@@ -76,6 +76,15 @@ function paragenv7_jungletree(x, y, z, area, data)
 				end
 			end
 			end
+		elseif j <= 0 then
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if math.abs(i) + math.abs(k) == 2 then
+					local vit = area:index(x + i, y + j, z + k)
+					data[vit] = c_juntree
+				end
+			end
+			end
 		end
 		local vit = area:index(x, y + j, z)
 		data[vit] = c_juntree
@@ -177,8 +186,8 @@ end
 
 function paragenv7_papyrus(x, y, z, area, data)
 	local c_papyrus = minetest.get_content_id("default:papyrus")
-	local ph = math.random(1, 4)
-	for j = 1, ph do
+	local ph = math.random(0, 3)
+	for j = 0, ph do
 		local vip = area:index(x, y + j, z)
 		data[vip] = c_papyrus
 	end
