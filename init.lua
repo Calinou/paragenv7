@@ -1,7 +1,16 @@
--- paragenv7 0.3.0 by paramat
+-- paragenv7 0.3.1 by paramat
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
+
+-- new in 0.3.1:
+-- ice varies thickness with temp
+-- dirt as papyrus bed, check for water below papyrus
+-- clay at mid-temp
+-- 'is ground content' false for leaves only
+
+-- TODO
+-- fog
 
 -- Parameters
 
@@ -22,7 +31,7 @@ local CACCHA = 841 -- Cactus
 local DRYCHA = 169 -- Dry shrub
 local PAPCHA = 3 -- Papyrus
 local ACACHA = 841 -- Acacia tree
-local GOGCHA = 3 -- Golden grass
+local GOGCHA = 3 -- Golden savanna grass
 local DUGCHA = 5 -- Dune grass
 
 -- 2D noise for temperature
@@ -30,10 +39,10 @@ local DUGCHA = 5 -- Dune grass
 local np_temp = {
 	offset = 0,
 	scale = 1,
-	spread = {x=256, y=256, z=256},
+	spread = {x=512, y=512, z=512},
 	seed = 9130,
 	octaves = 3,
-	persist = 0.4
+	persist = 0.5
 }
 
 -- 2D noise for humidity
@@ -41,10 +50,10 @@ local np_temp = {
 local np_humid = {
 	offset = 0,
 	scale = 1,
-	spread = {x=256, y=256, z=256},
+	spread = {x=512, y=512, z=512},
 	seed = -5500,
 	octaves = 3,
-	persist = 0.4
+	persist = 0.5
 }
 
 -- Stuff
@@ -136,37 +145,42 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			end
 		end
 		
-		local sandy = 4 + math.random(-1, 1)
+		local sandy = 5 + math.random(-1, 1) -- sandline
 		local open = true -- open to sky?
 		local solid = true -- solid node above?
+		local water = false -- water node above?
 		local surfy = y1 + 80 -- y of last surface detected
 		for y = y1, y0, -1 do -- working down each column for each node do
-			local fimadep = math.max(math.floor(6 - y / 16), 0)
+			local fimadep = math.floor(6 - y / 16) + math.random(0, 1)
 			local vi = area:index(x, y, z)
 			local nodid = data[vi]
 			local viuu = area:index(x, y - 2, z)
 			local nodiduu = data[viuu]
-			if nodid == c_stone
+			if nodid == c_stone -- if stone
 			or nodid == c_stonecopper
 			or nodid == c_stoneiron
 			or nodid == c_stonecoal then
 				if biome == 7 then
 					data[vi] = c_desertstone
 				end
-				if not solid then -- surface
+				if not solid then -- if surface
 					surfy = y
-					if nodiduu ~= c_air and nodiduu ~= c_water and fimadep >= 1 then
-						if y <= sandy then
-							data[vi] = c_sand
-							if open and y == 0 and biome >= 7
+					if nodiduu ~= c_air and nodiduu ~= c_water and fimadep >= 1 then -- if supported by 2 stone nodes
+						if y <= sandy then -- sand
+							if open and water and y == 0 and biome >= 7
 							and math.random(PAPCHA) == 2 then -- papyrus
 								paragenv7_papyrus(x, 2, z, area, data)
+								data[vi] = c_pg7dirt
+							elseif math.abs(n_temp) < 0.05 and y == -1 then -- clay
+								data[vi] = c_clay
+							else
+								data[vi] = c_sand
 							end
-							if open and y >= 4 and math.random(DUGCHA) == 2 then -- dune grass
+							if open and y >= 4 + math.random(0, 1) and math.random(DUGCHA) == 2 then -- dune grass
 								local vi = area:index(x, y + 1, z)
 								data[vi] = c_pg7goldengrass
 							end
-						else
+						else -- above sandline
 							if biome == 1 then
 								if math.random(121) == 2 then
 									data[vi] = c_ice
@@ -184,7 +198,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							else
 								data[vi] = c_pg7grass
 							end
-							if open then -- flora
+							if open then -- if open to sky then flora
 								local y = surfy + 1
 								local vi = area:index(x, y, z)
 								if biome == 1 then
@@ -263,10 +277,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				open = false
 				solid = true
 			elseif nodid == c_air or nodid == c_water then
-				if nodid == c_water and y == 1 and n_temp < ICETET then -- ice
-					data[vi] = c_ice
-				end
 				solid = false
+				if nodid == c_water then
+					water = true
+					if n_temp < ICETET and y <= 1 -- ice
+					and y >= 1 - math.floor((ICETET - n_temp) * 10) then
+						data[vi] = c_ice
+					end
+				end
 			end
 		end
 		nixz = nixz + 1

@@ -76,15 +76,6 @@ function paragenv7_jungletree(x, y, z, area, data)
 				end
 			end
 			end
-		elseif j <= 0 then
-			for i = -1, 1 do
-			for k = -1, 1 do
-				if math.abs(i) + math.abs(k) == 2 then
-					local vit = area:index(x + i, y + j, z + k)
-					data[vit] = c_juntree
-				end
-			end
-			end
 		end
 		local vit = area:index(x, y + j, z)
 		data[vit] = c_juntree

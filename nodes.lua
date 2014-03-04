@@ -1,7 +1,6 @@
 minetest.register_node("paragenv7:dirt", {
 	description = "PG7 Dirt",
 	tiles = {"default_dirt.png"},
-	is_ground_content = false,
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
 	sounds = default.node_sound_dirt_defaults(),
@@ -10,7 +9,6 @@ minetest.register_node("paragenv7:dirt", {
 minetest.register_node("paragenv7:grass", {
 	description = "PG7 Grass",
 	tiles = {"default_grass.png", "default_dirt.png", "default_dirt.png^default_grass_side.png"},
-	is_ground_content = false,
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
 	sounds = default.node_sound_dirt_defaults({
@@ -21,7 +19,6 @@ minetest.register_node("paragenv7:grass", {
 minetest.register_node("paragenv7:drygrass", {
 	description = "Dry Grass",
 	tiles = {"paragenv7_drygrass.png"},
-	is_ground_content = false,
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
 	sounds = default.node_sound_dirt_defaults({
@@ -32,7 +29,6 @@ minetest.register_node("paragenv7:drygrass", {
 minetest.register_node("paragenv7:permafrost", {
 	description = "Permafrost",
 	tiles = {"paragenv7_permafrost.png"},
-	is_ground_content = false,
 	groups = {crumbly=2},
 	drop = "default:dirt",
 	sounds = default.node_sound_dirt_defaults(),
@@ -47,7 +43,6 @@ minetest.register_node("paragenv7:goldengrass", {
 	paramtype = "light",
 	walkable = false,
 	buildable_to = true,
-	is_ground_content = true,
 	groups = {snappy=3,flammable=3,flora=1,attached_node=1},
 	sounds = default.node_sound_leaves_defaults(),
 	selection_box = {
@@ -95,4 +90,20 @@ minetest.register_node("paragenv7:needles", {
 	is_ground_content = false,
 	groups = {snappy=3, leafdecay=3},
 	sounds = default.node_sound_leaves_defaults(),
+})
+
+minetest.register_node("paragenv7:fog", {
+	description = "PG7 Fog",
+	drawtype = "glasslike",
+	tiles = {"paragenv7_fog.png"},
+	paramtype = "light",
+	is_ground_content = false,
+	sunlight_propagates = true,
+	walkable = false,
+	pointable = false,
+	diggable = false,
+	buildable_to = true,
+	is_ground_content = false,
+	post_effect_color = {a=128, r=241, g=248, b=255},
+	groups = {not_in_creative_inventory=1},
 })
