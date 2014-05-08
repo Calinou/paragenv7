@@ -1,110 +1,20 @@
 function paragenv7_appletree(x, y, z, area, data)
 	local c_tree = minetest.get_content_id("default:tree")
 	local c_apple = minetest.get_content_id("default:apple")
-	local c_leaves = minetest.get_content_id("default:leaves")
+	local c_appleaf = minetest.get_content_id("paragenv7:appleleaf")
 	for j = -2, 4 do
-		if j >= 1 then
+		if j == 3 or j == 4 then
 			for i = -2, 2 do
 			for k = -2, 2 do
-				local vil = area:index(x + i, y + j + 1, z + k)
-				if math.random(48) == 2 then
+				local vil = area:index(x + i, y + j, z + k)
+				if math.random(64) == 2 then
 					data[vil] = c_apple
-				elseif math.random(3) ~= 2 then
-					data[vil] = c_leaves
+				elseif math.random(5) ~= 2 then
+					data[vil] = c_appleaf
 				end
 			end
 			end
-		end
-		local vit = area:index(x, y + j, z)
-		data[vit] = c_tree
-	end
-end
-
-function paragenv7_pinetree(x, y, z, area, data)
-	local c_tree = minetest.get_content_id("default:tree")
-	local c_pg7needles = minetest.get_content_id("paragenv7:needles")
-	local c_snowblock = minetest.get_content_id("default:snowblock")
-	for j = -4, 13 do
-		if j == 3 or j == 6 or j == 9 or j == 12 then
-			for i = -2, 2 do
-			for k = -2, 2 do
-				if math.abs(i) == 2 or math.abs(k) == 2 then
-					if math.random(5) ~= 2 then
-						local vil = area:index(x + i, y + j, z + k)
-						data[vil] = c_pg7needles
-						local vila = area:index(x + i, y + j + 1, z + k)
-						data[vila] = c_snowblock
-					end
-				end
-			end
-			end
-		elseif j == 4 or j == 7 or j == 10 or j == 13 then
-			for i = -1, 1 do
-			for k = -1, 1 do
-				if not (i == 0 and j == 0) then
-					if math.random(7) ~= 2 then
-						local vil = area:index(x + i, y + j, z + k)
-						data[vil] = c_pg7needles
-						local vila = area:index(x + i, y + j + 1, z + k)
-						data[vila] = c_snowblock
-					end
-				end
-			end
-			end
-		end
-		local vit = area:index(x, y + j, z)
-		data[vit] = c_tree
-	end
-	local vil = area:index(x, y + 14, z)
-	local vila = area:index(x, y + 15, z)
-	local vilaa = area:index(x, y + 16, z)
-	data[vil] = c_pg7needles
-	data[vila] = c_pg7needles
-	data[vilaa] = c_snowblock
-end
-
-function paragenv7_jungletree(x, y, z, area, data)
-	local c_juntree = minetest.get_content_id("default:jungletree")
-	local c_pg7junleaf = minetest.get_content_id("paragenv7:jungleleaf")
-	for j = -5, 17 do
-		if j == 11 or j == 17 then
-			for i = -2, 2 do
-			for k = -2, 2 do
-				local vil = area:index(x + i, y + j + math.random(0, 1), z + k)
-				if math.random(5) ~= 2 then
-					data[vil] = c_pg7junleaf
-				end
-			end
-			end
-		end
-		local vit = area:index(x, y + j, z)
-		data[vit] = c_juntree
-	end
-end
-
-function paragenv7_acaciatree(x, y, z, area, data)
-	local c_tree = minetest.get_content_id("default:tree")
-	local c_acacialeaf = minetest.get_content_id("paragenv7:acacialeaf")
-	for j = -3, 7 do
-		if j == 7 then
-			for i = -4, 4 do
-			for k = -4, 4 do
-				if not (i == 0 or k == 0) then
-					if math.random(5) ~= 2 then
-						local vil = area:index(x + i, y + j, z + k)
-						data[vil] = c_acacialeaf
-					end
-				end
-			end
-			end
-		elseif j == 6 then
-			for i = -2, 2, 4 do
-			for k = -2, 2, 4 do
-				local vit = area:index(x + i, y + j, z + k)
-				data[vit] = c_tree
-			end
-			end
-		elseif j == 5 then
+		elseif j == 2 then
 			for i = -1, 1 do
 			for k = -1, 1 do
 				if math.abs(i) + math.abs(k) == 2 then
@@ -116,6 +26,143 @@ function paragenv7_acaciatree(x, y, z, area, data)
 		else
 			local vit = area:index(x, y + j, z)
 			data[vit] = c_tree
+		end
+	end
+end
+
+function paragenv7_pinetree(x, y, z, area, data)
+	local c_pitree = minetest.get_content_id("paragenv7:pinetree")
+	local c_needles = minetest.get_content_id("paragenv7:needles")
+	local c_snowblock = minetest.get_content_id("default:snowblock")
+	for j = -4, 14 do
+		if j == 3 or j == 6 or j == 9 or j == 12 then
+			for i = -2, 2 do
+			for k = -2, 2 do
+				if math.abs(i) == 2 or math.abs(k) == 2 then
+					if math.random(7) ~= 2 then
+						local vil = area:index(x + i, y + j, z + k)
+						data[vil] = c_needles
+						local vila = area:index(x + i, y + j + 1, z + k)
+						data[vila] = c_snowblock
+					end
+				end
+			end
+			end
+		elseif j == 4 or j == 7 or j == 10 then
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if not (i == 0 and j == 0) then
+					if math.random(11) ~= 2 then
+						local vil = area:index(x + i, y + j, z + k)
+						data[vil] = c_needles
+						local vila = area:index(x + i, y + j + 1, z + k)
+						data[vila] = c_snowblock
+					end
+				end
+			end
+			end
+		elseif j == 13 then
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if not (i == 0 and j == 0) then
+					local vil = area:index(x + i, y + j, z + k)
+					data[vil] = c_needles
+					local vila = area:index(x + i, y + j + 1, z + k)
+					data[vila] = c_needles
+					local vilaa = area:index(x + i, y + j + 2, z + k)
+					data[vilaa] = c_snowblock
+				end
+			end
+			end
+		end
+		local vit = area:index(x, y + j, z)
+		data[vit] = c_pitree
+	end
+	local vil = area:index(x, y + 15, z)
+	local vila = area:index(x, y + 16, z)
+	local vilaa = area:index(x, y + 17, z)
+	data[vil] = c_needles
+	data[vila] = c_needles
+	data[vilaa] = c_snowblock
+end
+
+function paragenv7_jungletree(x, y, z, area, data)
+	local c_juntree = minetest.get_content_id("default:jungletree")
+	local c_junleaf = minetest.get_content_id("paragenv7:jungleleaf")
+	local c_vine = minetest.get_content_id("paragenv7:vine")
+	local top = math.random(17,23)
+	local branch = math.floor(top * 0.6)
+	for j = -5, top do
+		if j == top or j == top - 1 or j == branch + 1 or j == branch + 2 then
+			for i = -2, 2 do -- leaves
+			for k = -2, 2 do
+				local vi = area:index(x + i, y + j, z + k)
+				if math.random(5) ~= 2 then
+					data[vi] = c_junleaf
+				end
+			end
+			end
+		elseif j == top - 2 or j == branch then -- branches
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if math.abs(i) + math.abs(k) == 2 then
+					local vi = area:index(x + i, y + j, z + k)
+					data[vi] = c_juntree
+				end
+			end
+			end
+		end
+		if j >= 0 and j <= top - 3 then -- climbable nodes
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if math.abs(i) + math.abs(k) == 1 then
+					local vi = area:index(x + i, y + j, z + k)
+					data[vi] = c_vine
+				end
+			end
+			end
+		end
+		if j <= top - 3 then -- trunk
+			local vi = area:index(x, y + j, z)
+			data[vi] = c_juntree
+		end
+	end
+end
+
+function paragenv7_acaciatree(x, y, z, area, data)
+	local c_actree = minetest.get_content_id("paragenv7:acaciatree")
+	local c_acleaf = minetest.get_content_id("paragenv7:acacialeaf")
+	for j = -3, 6 do
+		if j == 6 then
+			for i = -4, 4 do
+			for k = -4, 4 do
+				if not (i == 0 or k == 0) then
+					if math.random(7) ~= 2 then
+						local vil = area:index(x + i, y + j, z + k)
+						data[vil] = c_acleaf
+					end
+				end
+			end
+			end
+		elseif j == 5 then
+			for i = -2, 2, 4 do
+			for k = -2, 2, 4 do
+				local vit = area:index(x + i, y + j, z + k)
+				data[vit] = c_actree
+			end
+			end
+		elseif j == 4 then
+			for i = -1, 1 do
+			for k = -1, 1 do
+				if math.abs(i) + math.abs(k) == 2 then
+					local vit = area:index(x + i, y + j, z + k)
+					data[vit] = c_actree
+				end
+			end
+			end
+		else
+			local vit = area:index(x, y + j, z)
+			data[vit] = c_actree
 		end
 	end
 end

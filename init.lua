@@ -1,38 +1,28 @@
--- paragenv7 0.3.1 by paramat
+-- paragenv7 0.4.0 by paramat
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
 
--- new in 0.3.1:
--- ice varies thickness with temp
--- dirt as papyrus bed, check for water below papyrus
--- clay at mid-temp
--- 'is ground content' false for leaves only
-
--- TODO
--- fog
-
 -- Parameters
 
-local HITET = 0.4 -- High temperature threshold
-local LOTET = -0.4 -- Low ..
-local ICETET = -0.8 -- Ice ..
-local HIHUT = 0.4 -- High humidity threshold
-local LOHUT = -0.4 -- Low ..
+local HITET = 0.35 -- High temperature threshold
+local LOTET = -0.35 -- Low ..
+local ICETET = -0.7 -- Ice ..
+local HIHUT = 0.35 -- High humidity threshold
+local LOHUT = -0.35 -- Low ..
 
-local PINCHA = 49 -- Pine tree 1/x chance per surface node
-local APTCHA = 49 -- Appletree
-local FLOCHA = 49 -- Flower
-local FOGCHA = 9 -- Forest grass
-local GRACHA = 3 -- Grassland grasses
+local PINCHA = 36 -- Pine tree 1/x chance per surface node
+local APTCHA = 36 -- Appletree
+local FLOCHA = 289 -- Flower
+local GRACHA = 36 -- Grasses
 local JUTCHA = 16 -- Jungletree
-local JUGCHA = 9 -- Junglegrass
+local JUGCHA = 16 -- Junglegrass
 local CACCHA = 841 -- Cactus
-local DRYCHA = 169 -- Dry shrub
-local PAPCHA = 3 -- Papyrus
+local DRYCHA = 121 -- Dry shrub
 local ACACHA = 841 -- Acacia tree
-local GOGCHA = 3 -- Golden savanna grass
-local DUGCHA = 5 -- Dune grass
+local GOGCHA = 9 -- Golden savanna grass
+local PAPCHA = 4 -- Papyrus
+local DUGCHA = 9 -- Dune grass
 
 -- 2D noise for temperature
 
@@ -50,7 +40,7 @@ local np_temp = {
 local np_humid = {
 	offset = 0,
 	scale = 1,
-	spread = {x=512, y=512, z=512},
+	spread = {x=768, y=768, z=768},
 	seed = -5500,
 	octaves = 3,
 	persist = 0.5
@@ -232,7 +222,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 										paragenv7_appletree(x, y, z, area, data)
 									elseif math.random(FLOCHA) == 2 then
 										paragenv7_flower(data, vi)
-									elseif math.random(FOGCHA) == 2 then
+									elseif math.random(GRACHA) == 2 then
 										paragenv7_grass(data, vi)
 									end
 								elseif biome == 7 then
