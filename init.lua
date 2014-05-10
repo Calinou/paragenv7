@@ -1,15 +1,26 @@
--- paragenv7 0.4.0 by paramat
+-- paragenv7 0.4.1 by paramat
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
 
+-- grassy sides
+-- biome blend
+-- acacia wood and pine wood planks
+-- new flora noise varies sandline
+-- TODO
+-- snow, palmtrees on beaches
+
 -- Parameters
+
+local YSAV = 4 -- Average sandline y, dune grasses above this
+local SAMP = 3 -- Sandline amplitude
 
 local HITET = 0.35 -- High temperature threshold
 local LOTET = -0.35 -- Low ..
 local ICETET = -0.7 -- Ice ..
 local HIHUT = 0.35 -- High humidity threshold
 local LOHUT = -0.35 -- Low ..
+local BLEND = 0.02 -- Biome blend randomness
 
 local PINCHA = 36 -- Pine tree 1/x chance per surface node
 local APTCHA = 36 -- Appletree
@@ -42,6 +53,17 @@ local np_humid = {
 	scale = 1,
 	spread = {x=768, y=768, z=768},
 	seed = -5500,
+	octaves = 3,
+	persist = 0.5
+}
+
+-- 2D noise for flora / sandline
+
+local np_flora = {
+	offset = 0,
+	scale = 1,
+	spread = {x=128, y=128, z=128},
+	seed = 777001,
 	octaves = 3,
 	persist = 0.5
 }
@@ -102,6 +124,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	
 	local nvals_temp = minetest.get_perlin_map(np_temp, chulens):get2dMap_flat(minposxz)
 	local nvals_humid = minetest.get_perlin_map(np_humid, chulens):get2dMap_flat(minposxz)
+	local nvals_flora = minetest.get_perlin_map(np_flora, chulens):get2dMap_flat(minposxz)
 	
 	local nixz = 1
 	for z = z0, z1 do
@@ -109,33 +132,34 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		local n_temp = nvals_temp[nixz] -- select biome
 		local n_humid = nvals_humid[nixz]
 		local biome = false
-		if n_temp < LOTET then
-			if n_humid < LOHUT then
+		if n_temp < LOTET - math.random() * BLEND then
+			if n_humid < LOHUT - math.random() * BLEND then
 				biome = 1 -- tundra
-			elseif n_humid > HIHUT then
+			elseif n_humid > HIHUT + math.random() * BLEND then
 				biome = 3 -- taiga
 			else
 				biome = 2 -- snowplains
 			end
-		elseif n_temp > HITET then
-			if n_humid < LOHUT then
+		elseif n_temp > HITET + math.random() * BLEND then
+			if n_humid < LOHUT - math.random() * BLEND then
 				biome = 7 -- desert
-			elseif n_humid > HIHUT then
+			elseif n_humid > HIHUT + math.random() * BLEND then
 				biome = 9 -- rainforest
 			else
 				biome = 8 -- savanna
 			end
 		else
-			if n_humid < LOHUT then
+			if n_humid < LOHUT - math.random() * BLEND then
 				biome = 4 -- dry grassland
-			elseif n_humid > HIHUT then
+			elseif n_humid > HIHUT + math.random() * BLEND then
 				biome = 6 -- deciduous forest
 			else
 				biome = 5 -- grassland
 			end
 		end
 		
-		local sandy = 5 + math.random(-1, 1) -- sandline
+		local n_flora = nvals_flora[nixz]
+		local sandy = YSAV + n_flora * SAMP + math.random(0, 1) -- sandline
 		local open = true -- open to sky?
 		local solid = true -- solid node above?
 		local water = false -- water node above?
@@ -166,7 +190,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							else
 								data[vi] = c_sand
 							end
-							if open and y >= 4 + math.random(0, 1) and math.random(DUGCHA) == 2 then -- dune grass
+							if open and y >= 4 + math.random() and math.random(DUGCHA) == 2 then -- dune grass
 								local vi = area:index(x, y + 1, z)
 								data[vi] = c_pg7goldengrass
 							end

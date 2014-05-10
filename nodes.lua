@@ -1,5 +1,5 @@
 minetest.register_node("paragenv7:dirt", {
-	description = "PG7 Dirt",
+	description = "Dirt",
 	tiles = {"default_dirt.png"},
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
@@ -7,8 +7,8 @@ minetest.register_node("paragenv7:dirt", {
 })
 
 minetest.register_node("paragenv7:grass", {
-	description = "PG7 Grass",
-	tiles = {"default_grass.png", "default_dirt.png", "default_dirt.png^default_grass_side.png"},
+	description = "Grass",
+	tiles = {"default_grass.png", "default_dirt.png", "default_grass.png"},
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
 	sounds = default.node_sound_dirt_defaults({
@@ -52,7 +52,7 @@ minetest.register_node("paragenv7:goldengrass", {
 })
 
 minetest.register_node("paragenv7:cactus", {
-	description = "PG7 Cactus",
+	description = "Cactus",
 	tiles = {"default_cactus_top.png", "default_cactus_top.png", "default_cactus_side.png"},
 	paramtype2 = "facedir",
 	is_ground_content = false,
@@ -63,7 +63,7 @@ minetest.register_node("paragenv7:cactus", {
 })
 
 minetest.register_node("paragenv7:appleleaf", {
-	description = "PG7 Appletree Leaves",
+	description = "Appletree Leaves",
 	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"default_leaves.png"},
@@ -74,7 +74,7 @@ minetest.register_node("paragenv7:appleleaf", {
 })
 
 minetest.register_node("paragenv7:jungleleaf", {
-	description = "PG7 Jungletree Leaves",
+	description = "Jungletree Leaves",
 	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"default_jungleleaves.png"},
@@ -85,7 +85,7 @@ minetest.register_node("paragenv7:jungleleaf", {
 })
 
 minetest.register_node("paragenv7:vine", {
-	description = "PG7 Jungletree Vine",
+	description = "Jungletree Vine",
 	drawtype = "airlike",
 	paramtype = "light",
 	walkable = false,
@@ -98,7 +98,7 @@ minetest.register_node("paragenv7:vine", {
 })
 
 minetest.register_node("paragenv7:acacialeaf", {
-	description = "PG7 Acacia Leaves",
+	description = "Acacia Leaves",
 	drawtype = "allfaces_optional",
 	visual_scale = 1.3,
 	tiles = {"paragenv7_acacialeaf.png"},
@@ -109,7 +109,7 @@ minetest.register_node("paragenv7:acacialeaf", {
 })
 
 minetest.register_node("paragenv7:acaciatree", {
-	description = "PG7 Acacia Tree",
+	description = "Acacia Tree",
 	tiles = {"paragenv7_acaciatreetop.png", "paragenv7_acaciatreetop.png", "paragenv7_acaciatree.png"},
 	paramtype2 = "facedir",
 	is_ground_content = false,
@@ -118,8 +118,15 @@ minetest.register_node("paragenv7:acaciatree", {
 	on_place = minetest.rotate_node
 })
 
+minetest.register_node("paragenv7:acaciawood", {
+	description = "Acacia Wood Planks",
+	tiles = {"paragenv7_acaciawood.png"},
+	groups = {choppy=2,oddly_breakable_by_hand=2,flammable=3,wood=1},
+	sounds = default.node_sound_wood_defaults(),
+})
+
 minetest.register_node("paragenv7:needles", {
-	description = "PG7 Pine Needles",
+	description = "Pine Needles",
 	tiles = {"paragenv7_needles.png"},
 	is_ground_content = false,
 	groups = {snappy=3, leafdecay=3},
@@ -127,11 +134,34 @@ minetest.register_node("paragenv7:needles", {
 })
 
 minetest.register_node("paragenv7:pinetree", {
-	description = "WS Pine Tree",
+	description = "Pine Tree",
 	tiles = {"paragenv7_pinetreetop.png", "paragenv7_pinetreetop.png", "paragenv7_pinetree.png"},
 	paramtype2 = "facedir",
 	is_ground_content = false,
 	groups = {tree=1,choppy=2,oddly_breakable_by_hand=1,flammable=2},
 	sounds = default.node_sound_wood_defaults(),
 	on_place = minetest.rotate_node
+})
+
+minetest.register_node("paragenv7:pinewood", {
+	description = "Pine Wood Planks",
+	tiles = {"paragenv7_pinewood.png"},
+	groups = {choppy=2,oddly_breakable_by_hand=2,flammable=3,wood=1},
+	sounds = default.node_sound_wood_defaults(),
+})
+
+-- Crafting
+
+minetest.register_craft({
+	output = "paragenv7:acaciawood 4",
+	recipe = {
+		{"paragenv7:acaciatree"},
+	}
+})
+
+minetest.register_craft({
+	output = "paragenv7:pinewood 4",
+	recipe = {
+		{"paragenv7:pinetree"},
+	}
 })
