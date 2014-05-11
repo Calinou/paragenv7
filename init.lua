@@ -3,12 +3,10 @@
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
 
--- grassy sides
--- biome blend
--- acacia wood and pine wood planks
--- new flora noise varies sandline
+-- abs flora noise varies tree/grass density
+-- snowy beaches in taiga and snowplains
 -- TODO
--- snow, palmtrees on beaches
+-- palmtrees on beaches
 
 -- Parameters
 
@@ -22,18 +20,18 @@ local HIHUT = 0.35 -- High humidity threshold
 local LOHUT = -0.35 -- Low ..
 local BLEND = 0.02 -- Biome blend randomness
 
-local PINCHA = 36 -- Pine tree 1/x chance per surface node
-local APTCHA = 36 -- Appletree
-local FLOCHA = 289 -- Flower
-local GRACHA = 36 -- Grasses
+local PINCHA = 1 / 36 -- Pine tree 1/x chance per surface node
+local APTCHA = 1 / 36 -- Appletree max chance
+local FLOCHA = 529 -- Flower
+local GRACHA = 1 / 16 -- Grasses
 local JUTCHA = 16 -- Jungletree
 local JUGCHA = 16 -- Junglegrass
 local CACCHA = 841 -- Cactus
 local DRYCHA = 121 -- Dry shrub
-local ACACHA = 841 -- Acacia tree
-local GOGCHA = 9 -- Golden savanna grass
-local PAPCHA = 4 -- Papyrus
-local DUGCHA = 9 -- Dune grass
+local ACACHA = 1 / 841 -- Acacia tree
+local GOGCHA = 1 / 9 -- Golden savanna grass
+local PAPCHA = 1 / 4 -- Papyrus
+local DUGCHA = 1 / 9 -- Dune grass
 
 -- 2D noise for temperature
 
@@ -62,7 +60,7 @@ local np_humid = {
 local np_flora = {
 	offset = 0,
 	scale = 1,
-	spread = {x=128, y=128, z=128},
+	spread = {x=256, y=256, z=256},
 	seed = 777001,
 	octaves = 3,
 	persist = 0.5
@@ -159,6 +157,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		end
 		
 		local n_flora = nvals_flora[nixz]
+		local n_absflora = math.abs(n_flora)
 		local sandy = YSAV + n_flora * SAMP + math.random(0, 1) -- sandline
 		local open = true -- open to sky?
 		local solid = true -- solid node above?
@@ -181,18 +180,21 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					surfy = y
 					if nodiduu ~= c_air and nodiduu ~= c_water and fimadep >= 1 then -- if supported by 2 stone nodes
 						if y <= sandy then -- sand
-							if open and water and y == 0 and biome >= 7
-							and math.random(PAPCHA) == 2 then -- papyrus
-								paragenv7_papyrus(x, 2, z, area, data)
-								data[vi] = c_pg7dirt
-							elseif math.abs(n_temp) < 0.05 and y == -1 then -- clay
+							if math.abs(n_temp) < 0.05 and y == -1 then -- clay
 								data[vi] = c_clay
 							else
 								data[vi] = c_sand
 							end
-							if open and y >= 4 + math.random() and math.random(DUGCHA) == 2 then -- dune grass
+							if open and water and y == 0 and biome >= 7
+							and math.random() < n_absflora * PAPCHA then -- papyrus
+								paragenv7_papyrus(x, 2, z, area, data)
+							elseif open and y >= 4 + math.random() and biome >= 4
+							and math.random() < n_absflora * DUGCHA then -- dune grass
 								local vi = area:index(x, y + 1, z)
 								data[vi] = c_pg7goldengrass
+							elseif open and y >= 1 and (biome == 2 or biome == 3) then -- snowy beach
+								local vi = area:index(x, y + 1, z)
+								data[vi] = c_snowblock
 							end
 						else -- above sandline
 							if biome == 1 then
@@ -222,13 +224,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 								elseif biome == 2 then
 									data[vi] = c_snowblock
 								elseif biome == 3 then
-									if math.random(PINCHA) == 2 then
+									if math.random() < n_absflora * PINCHA then
 										paragenv7_pinetree(x, y, z, area, data)
 									else
 										data[vi] = c_snowblock
 									end
 								elseif biome == 4 then
-									if math.random(GRACHA) == 2 then
+									if math.random() < n_absflora * GRACHA then
 										if math.random(5) == 2 then
 											data[vi] = c_pg7goldengrass
 										else
@@ -238,15 +240,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 								elseif biome == 5 then
 									if math.random(FLOCHA) == 2 then
 										paragenv7_flower(data, vi)
-									elseif math.random(GRACHA) == 2 then
+									elseif math.random() < n_absflora * GRACHA then
 										paragenv7_grass(data, vi)
 									end
 								elseif biome == 6 then
-									if math.random(APTCHA) == 2 then
+									if math.random() < n_absflora * APTCHA then
 										paragenv7_appletree(x, y, z, area, data)
-									elseif math.random(FLOCHA) == 2 then
-										paragenv7_flower(data, vi)
-									elseif math.random(GRACHA) == 2 then
+									elseif math.random() < n_absflora * GRACHA then
 										paragenv7_grass(data, vi)
 									end
 								elseif biome == 7 then
@@ -256,9 +256,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 										data[vi] = c_dryshrub
 									end
 								elseif biome == 8 then
-									if math.random(ACACHA) == 2 then
+									if math.random() < n_absflora * ACACHA then
 										paragenv7_acaciatree(x, y, z, area, data)
-									elseif math.random(GOGCHA) == 2 then
+									elseif math.random() < n_absflora * GOGCHA then
 										data[vi] = c_pg7goldengrass
 									end
 								elseif biome == 9 then
