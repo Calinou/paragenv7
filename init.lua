@@ -3,15 +3,14 @@
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
 
--- abs flora noise varies tree/grass density
--- snowy beaches in taiga and snowplains
--- TODO
--- palmtrees on beaches
+-- vary ice thickness
+-- flora noise makes paths, does not vary density
 
 -- Parameters
 
 local YSAV = 4 -- Average sandline y, dune grasses above this
 local SAMP = 3 -- Sandline amplitude
+local BERGDEP = 16 -- Maximum iceberg depth
 
 local HITET = 0.35 -- High temperature threshold
 local LOTET = -0.35 -- Low ..
@@ -22,12 +21,12 @@ local BLEND = 0.02 -- Biome blend randomness
 
 local PINCHA = 1 / 36 -- Pine tree 1/x chance per surface node
 local APTCHA = 1 / 36 -- Appletree max chance
-local FLOCHA = 529 -- Flower
+local FLOCHA = 1 / 529 -- Flower
 local GRACHA = 1 / 16 -- Grasses
-local JUTCHA = 16 -- Jungletree
-local JUGCHA = 16 -- Junglegrass
-local CACCHA = 841 -- Cactus
-local DRYCHA = 121 -- Dry shrub
+local JUTCHA = 1 / 16 -- Jungletree
+local JUGCHA = 1 / 16 -- Junglegrass
+local CACCHA = 1 / 841 -- Cactus
+local DRYCHA = 1 / 121 -- Dry shrub
 local ACACHA = 1 / 841 -- Acacia tree
 local GOGCHA = 1 / 9 -- Golden savanna grass
 local PAPCHA = 1 / 4 -- Papyrus
@@ -49,18 +48,18 @@ local np_temp = {
 local np_humid = {
 	offset = 0,
 	scale = 1,
-	spread = {x=768, y=768, z=768},
+	spread = {x=512, y=512, z=512},
 	seed = -5500,
 	octaves = 3,
 	persist = 0.5
 }
 
--- 2D noise for flora / sandline
+-- 2D noise for flora / sandline / icesheet depth
 
 local np_flora = {
 	offset = 0,
 	scale = 1,
-	spread = {x=256, y=256, z=256},
+	spread = {x=128, y=128, z=128},
 	seed = 777001,
 	octaves = 3,
 	persist = 0.5
@@ -159,6 +158,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		local n_flora = nvals_flora[nixz]
 		local n_absflora = math.abs(n_flora)
 		local sandy = YSAV + n_flora * SAMP + math.random(0, 1) -- sandline
+		local bergdep = n_absflora * BERGDEP -- iceberg depth
 		local open = true -- open to sky?
 		local solid = true -- solid node above?
 		local water = false -- water node above?
@@ -218,53 +218,49 @@ minetest.register_on_generated(function(minp, maxp, seed)
 								local y = surfy + 1
 								local vi = area:index(x, y, z)
 								if biome == 1 then
-									if math.random(DRYCHA) == 2 then
+									if math.random() < DRYCHA then
 										data[vi] = c_dryshrub
 									end
 								elseif biome == 2 then
 									data[vi] = c_snowblock
 								elseif biome == 3 then
-									if math.random() < n_absflora * PINCHA then
+									if math.random() < PINCHA and n_absflora > 0.1 then
 										paragenv7_pinetree(x, y, z, area, data)
 									else
 										data[vi] = c_snowblock
 									end
 								elseif biome == 4 then
-									if math.random() < n_absflora * GRACHA then
-										if math.random(5) == 2 then
-											data[vi] = c_pg7goldengrass
-										else
-											data[vi] = c_dryshrub
-										end
+									if math.random() < DRYCHA then
+										data[vi] = c_dryshrub
 									end
 								elseif biome == 5 then
-									if math.random(FLOCHA) == 2 then
+									if math.random() < FLOCHA then
 										paragenv7_flower(data, vi)
-									elseif math.random() < n_absflora * GRACHA then
+									elseif math.random() < GRACHA then
 										paragenv7_grass(data, vi)
 									end
 								elseif biome == 6 then
-									if math.random() < n_absflora * APTCHA then
+									if math.random() < APTCHA and n_absflora > 0.1 then
 										paragenv7_appletree(x, y, z, area, data)
-									elseif math.random() < n_absflora * GRACHA then
+									elseif math.random() < GRACHA then
 										paragenv7_grass(data, vi)
 									end
 								elseif biome == 7 then
-									if math.random(CACCHA) == 2 then
+									if math.random() < CACCHA then
 										paragenv7_cactus(x, y, z, area, data)
-									elseif math.random(DRYCHA) == 2 then
+									elseif math.random() < DRYCHA then
 										data[vi] = c_dryshrub
 									end
 								elseif biome == 8 then
-									if math.random() < n_absflora * ACACHA then
+									if math.random() < ACACHA then
 										paragenv7_acaciatree(x, y, z, area, data)
-									elseif math.random() < n_absflora * GOGCHA then
+									elseif math.random() < GOGCHA then
 										data[vi] = c_pg7goldengrass
 									end
 								elseif biome == 9 then
-									if math.random(JUTCHA) == 2 then
+									if math.random() < JUTCHA then
 										paragenv7_jungletree(x, y, z, area, data)
-									elseif math.random(JUGCHA) == 2 then
+									elseif math.random() < JUGCHA then
 										data[vi] = c_jungrass
 									end
 								end
@@ -294,8 +290,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				solid = false
 				if nodid == c_water then
 					water = true
-					if n_temp < ICETET and y <= 1 -- ice
-					and y >= 1 - math.floor((ICETET - n_temp) * 10) then
+					if y >= 1 - bergdep and y <= 1 + bergdep / 8 and n_temp < ICETET then-- icesheet
 						data[vi] = c_ice
 					end
 				end
