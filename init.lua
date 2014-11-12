@@ -1,10 +1,7 @@
--- paragenv7 0.4.1 by paramat
+-- paragenv7 0.4.2 by paramat
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- Licenses: code WTFPL, textures CC BY-SA
-
--- vary ice thickness
--- flora noise makes paths, does not vary density
 
 -- Parameters
 
@@ -19,16 +16,16 @@ local HIHUT = 0.35 -- High humidity threshold
 local LOHUT = -0.35 -- Low ..
 local BLEND = 0.02 -- Biome blend randomness
 
-local PINCHA = 1 / 36 -- Pine tree 1/x chance per surface node
-local APTCHA = 1 / 36 -- Appletree max chance
+local PINCHA = 1 / 49 -- Pine tree 1/x chance per surface node
+local APTCHA = 1 / 49 -- Appletree max chance
 local FLOCHA = 1 / 529 -- Flower
-local GRACHA = 1 / 16 -- Grasses
+local GRACHA = 1 / 25 -- Grasses
 local JUTCHA = 1 / 16 -- Jungletree
-local JUGCHA = 1 / 16 -- Junglegrass
+local JUGCHA = 1 / 9 -- Junglegrass
 local CACCHA = 1 / 841 -- Cactus
 local DRYCHA = 1 / 121 -- Dry shrub
 local ACACHA = 1 / 841 -- Acacia tree
-local GOGCHA = 1 / 9 -- Golden savanna grass
+local GOGCHA = 1 / 4 -- Golden savanna grass
 local PAPCHA = 1 / 4 -- Papyrus
 local DUGCHA = 1 / 9 -- Dune grass
 
@@ -37,10 +34,10 @@ local DUGCHA = 1 / 9 -- Dune grass
 local np_temp = {
 	offset = 0,
 	scale = 1,
-	spread = {x=512, y=512, z=512},
+	spread = {x=2048, y=2048, z=2048},
 	seed = 9130,
 	octaves = 3,
-	persist = 0.5
+	persist = 0.33
 }
 
 -- 2D noise for humidity
@@ -48,10 +45,10 @@ local np_temp = {
 local np_humid = {
 	offset = 0,
 	scale = 1,
-	spread = {x=512, y=512, z=512},
+	spread = {x=2048, y=2048, z=2048},
 	seed = -5500,
 	octaves = 3,
-	persist = 0.5
+	persist = 0.33
 }
 
 -- 2D noise for flora / sandline / icesheet depth
@@ -59,15 +56,13 @@ local np_humid = {
 local np_flora = {
 	offset = 0,
 	scale = 1,
-	spread = {x=128, y=128, z=128},
+	spread = {x=384, y=384, z=384},
 	seed = 777001,
 	octaves = 3,
-	persist = 0.5
+	persist = 0.6
 }
 
 -- Stuff
-
-paragenv7 = {}
 
 dofile(minetest.get_modpath("paragenv7").."/nodes.lua")
 dofile(minetest.get_modpath("paragenv7").."/functions.lua")

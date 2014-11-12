@@ -1,6 +1,6 @@
-paragenv7 0.4.1 by paramat
+paragenv7 0.4.2 by paramat
 For latest stable Minetest and back to 0.4.8
 Depends default
 Licenses: code WTFPL, textures CC BY-SA
 
-For use with mapgen v7 stone terrain.
+For use with mapgen v5 or v7 stone terrain (no biomes).

@@ -8,7 +8,8 @@ minetest.register_node("paragenv7:dirt", {
 
 minetest.register_node("paragenv7:grass", {
 	description = "Grass",
-	tiles = {"default_grass.png", "default_dirt.png", "default_grass.png"},
+	tiles = {"default_grass.png", "default_dirt.png", "default_dirt.png^default_grass_side.png"}, -- default style
+	-- tiles = {"default_grass.png", "default_dirt.png", "default_grass.png"}, -- paramat style
 	groups = {crumbly=3,soil=1},
 	drop = "default:dirt",
 	sounds = default.node_sound_dirt_defaults({
