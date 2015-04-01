@@ -1,8 +1,3 @@
--- paragenv7 0.4.2 by paramat
--- For latest stable Minetest and back to 0.4.8
--- Depends default
--- Licenses: code WTFPL, textures CC BY-SA
-
 -- Parameters
 
 local YSAV = 4 -- Average sandline y, dune grasses above this
@@ -62,15 +57,32 @@ local np_flora = {
 	persist = 0.6
 }
 
--- Stuff
+-- Do files
 
 dofile(minetest.get_modpath("paragenv7").."/nodes.lua")
 dofile(minetest.get_modpath("paragenv7").."/functions.lua")
 
+-- Clear mgv5/mgv7 biomes and decorations
+
+minetest.clear_registered_biomes()
+minetest.clear_registered_decorations()
+
+-- Set "nolight", calculate light after chunk generation only
+
+minetest.register_on_mapgen_init(function(mgparams)
+	minetest.set_mapgen_params({flags = "nolight"})
+end)
+
+-- Initialize noise objects to nil
+
+local nobj_temp = nil
+local nobj_humid = nil
+local nobj_flora = nil
+
 -- On generated function
 
 minetest.register_on_generated(function(minp, maxp, seed)
-	if minp.y < -32 or minp.y > 208 then
+	if minp.y < -32 or minp.y > 448 then
 		return
 	end
 	
@@ -82,27 +94,27 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local y0 = minp.y
 	local z0 = minp.z
 	
-	print ("[paragenv7] chunk minp ("..x0.." "..y0.." "..z0..")")
-	
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 	local data = vm:get_data()
 	
 	local c_air = minetest.get_content_id("air")
-	local c_sand = minetest.get_content_id("default:sand")
-	local c_desertsand = minetest.get_content_id("default:desert_sand")
-	local c_snowblock = minetest.get_content_id("default:snowblock")
-	local c_ice = minetest.get_content_id("default:ice")
-	local c_dirtsnow = minetest.get_content_id("default:dirt_with_snow")
-	local c_jungrass = minetest.get_content_id("default:junglegrass")
-	local c_dryshrub = minetest.get_content_id("default:dry_shrub")
-	local c_clay = minetest.get_content_id("default:clay")
+	local c_water = minetest.get_content_id("default:water_source")
 	local c_stone = minetest.get_content_id("default:stone")
 	local c_desertstone = minetest.get_content_id("default:desert_stone")
 	local c_stonecopper = minetest.get_content_id("default:stone_with_copper")
 	local c_stoneiron = minetest.get_content_id("default:stone_with_iron")
 	local c_stonecoal = minetest.get_content_id("default:stone_with_coal")
-	local c_water = minetest.get_content_id("default:water_source")
+	local c_dirt = minetest.get_content_id("default:dirt")
+	local c_sand = minetest.get_content_id("default:sand")
+	local c_desertsand = minetest.get_content_id("default:desert_sand")
+	local c_snowblock = minetest.get_content_id("default:snowblock")
+	local c_ice = minetest.get_content_id("default:ice")
+	local c_dirtsnow = minetest.get_content_id("default:dirt_with_snow")
+	local c_clay = minetest.get_content_id("default:clay")
+	local c_gravel = minetest.get_content_id("default:gravel")
+	local c_jungrass = minetest.get_content_id("default:junglegrass")
+	local c_dryshrub = minetest.get_content_id("default:dry_shrub")
 	
 	local c_pg7dirt = minetest.get_content_id("paragenv7:dirt")
 	local c_pg7grass = minetest.get_content_id("paragenv7:grass")
@@ -110,13 +122,17 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_pg7permafrost = minetest.get_content_id("paragenv7:permafrost")
 	local c_pg7goldengrass = minetest.get_content_id("paragenv7:goldengrass")
 	
-	local sidelen = x1 - x0 + 1
-	local chulens = {x=sidelen, y=sidelen, z=sidelen}
-	local minposxz = {x=x0, y=z0}
+	local chunksize = x1 - x0 + 1
+	local pmapsize = {x = chunksize, y = chunksize, z = 1}
+	local pmapminpxz = {x = x0, y = z0}
 	
-	local nvals_temp = minetest.get_perlin_map(np_temp, chulens):get2dMap_flat(minposxz)
-	local nvals_humid = minetest.get_perlin_map(np_humid, chulens):get2dMap_flat(minposxz)
-	local nvals_flora = minetest.get_perlin_map(np_flora, chulens):get2dMap_flat(minposxz)
+	nobj_temp = nobj_temp or minetest.get_perlin_map(np_temp, pmapsize)
+	nobj_humid = nobj_humid or minetest.get_perlin_map(np_humid, pmapsize)
+	nobj_flora = nobj_flora or minetest.get_perlin_map(np_flora, pmapsize)
+	
+	local nvals_temp = nobj_temp:get2dMap_flat(pmapminpxz)
+	local nvals_humid = nobj_humid:get2dMap_flat(pmapminpxz)
+	local nvals_flora = nobj_flora:get2dMap_flat(pmapminpxz)
 	
 	local nixz = 1
 	for z = z0, z1 do
@@ -164,16 +180,21 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			local nodid = data[vi]
 			local viuu = area:index(x, y - 2, z)
 			local nodiduu = data[viuu]
-			if nodid == c_stone -- if stone
+			if nodid == c_stone
 			or nodid == c_stonecopper
 			or nodid == c_stoneiron
-			or nodid == c_stonecoal then
+			or nodid == c_stonecoal
+			or nodid == c_gravel
+			or nodid == c_dirt
+			or nodid == c_sand then
 				if biome == 7 then
 					data[vi] = c_desertstone
 				end
 				if not solid then -- if surface
 					surfy = y
-					if nodiduu ~= c_air and nodiduu ~= c_water and fimadep >= 1 then -- if supported by 2 stone nodes
+					if nodiduu ~= c_air
+					and nodiduu ~= c_water
+					and fimadep >= 1 then
 						if y <= sandy then -- sand
 							if math.abs(n_temp) < 0.05 and y == -1 then -- clay
 								data[vi] = c_clay
@@ -183,12 +204,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							if open and water and y == 0 and biome >= 7
 							and math.random() < n_absflora * PAPCHA then -- papyrus
 								paragenv7_papyrus(x, 2, z, area, data)
-							elseif open and y >= 4 + math.random() and biome >= 4
+							elseif open and biome >= 4
+							and y >= 4 + math.random() 
 							and math.random() < n_absflora * DUGCHA then -- dune grass
 								local vi = area:index(x, y + 1, z)
 								data[vi] = c_pg7goldengrass
-							elseif open and y >= 1 and (biome == 2 or biome == 3) then -- snowy beach
-								local vi = area:index(x, y + 1, z)
+							elseif open and y >= 1
+							and (biome == 2 or biome == 3) then
+								local vi = area:index(x, y + 1, z) -- snowy beach
 								data[vi] = c_snowblock
 							end
 						else -- above sandline
@@ -219,7 +242,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 								elseif biome == 2 then
 									data[vi] = c_snowblock
 								elseif biome == 3 then
-									if math.random() < PINCHA and n_absflora > 0.1 then
+									if math.random() < PINCHA
+									and n_absflora > 0.1 then
 										paragenv7_pinetree(x, y, z, area, data)
 									else
 										data[vi] = c_snowblock
@@ -235,7 +259,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 										paragenv7_grass(data, vi)
 									end
 								elseif biome == 6 then
-									if math.random() < APTCHA and n_absflora > 0.1 then
+									if math.random() < APTCHA
+									and n_absflora > 0.1 then
 										paragenv7_appletree(x, y, z, area, data)
 									elseif math.random() < GRACHA then
 										paragenv7_grass(data, vi)
@@ -263,7 +288,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						end
 					end
 				else -- underground
-					if nodiduu ~= c_air and nodiduu ~= c_water and surfy - y + 1 <= fimadep then
+					if nodiduu ~= c_air
+					and nodiduu ~= c_water
+					and surfy - y + 1 <= fimadep then
 						if y <= sandy then
 							data[vi] = c_sand
 						elseif biome == 1 then
@@ -285,7 +312,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				solid = false
 				if nodid == c_water then
 					water = true
-					if y >= 1 - bergdep and y <= 1 + bergdep / 8 and n_temp < ICETET then-- icesheet
+					if y >= 1 - bergdep and y <= 1 + bergdep / 8
+					and n_temp < ICETET then-- icesheet
 						data[vi] = c_ice
 					end
 				end
@@ -296,9 +324,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	end
 	
 	vm:set_data(data)
-	vm:set_lighting({day=0, night=0})
 	vm:calc_lighting()
 	vm:write_to_map(data)
 	local chugent = math.ceil((os.clock() - t1) * 1000)
-	print ("[paragenv7] "..chugent.." ms")			
+	print ("[paragenv7] "..chugent.." ms  minp ("..x0.." "..y0.." "..z0..")")			
 end)	

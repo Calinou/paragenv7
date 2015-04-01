@@ -1,6 +1,16 @@
-paragenv7 0.4.2 by paramat
-For latest stable Minetest and back to 0.4.8
+paragenv7 0.5.0 by paramat
+For Minetest 0.4.12 stable and later
 Depends default
 Licenses: code WTFPL, textures CC BY-SA
 
-For use with mapgen v5 or v7 stone terrain (no biomes).
+
+Version changes:
+
+Increase speed:
+    2D perlinmap z-size = 1
+    Noise objects created once instead of every chunk
+
+Set nolight flag to calculate light once only after chunk generation
+Clear the default mod's registered biomes and decorations
+Check for and replace dirt, sand and gravel to remove ugly dirt and gravel blobs at surface
+Use allfaces_optional drawtype for pine needles

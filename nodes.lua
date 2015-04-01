@@ -128,6 +128,7 @@ minetest.register_node("paragenv7:acaciawood", {
 
 minetest.register_node("paragenv7:needles", {
 	description = "Pine Needles",
+	drawtype = "allfaces_optional",
 	tiles = {"paragenv7_needles.png"},
 	is_ground_content = false,
 	groups = {snappy=3, leafdecay=3},
